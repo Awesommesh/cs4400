@@ -1,0 +1,12 @@
+{
+  "name": "cs4400",
+  "version": "1.0.0",
+  "description": "CS4400: Atlanta Movie Project",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Nicholas Boshart",
+  "license": "MIT",
+  "dependencies": {
+    "eslint": "^6.6.0"
+  }
+}
