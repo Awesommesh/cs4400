@@ -1,0 +1,80 @@
+@import url('https://bit.ly/2Xn9Hfg');
+@import url('https://bit.ly/35e7Gob');
+
+html {
+  background-color: #B34444;
+}
+
+input, button {
+  margin: 5px;
+  font-size: 18px;
+  padding: 3px 5px;
+  font-family: 'Dosis';
+
+  border-width: 2px;
+  border-radius: 3px;
+  border-color: #000000;
+}
+input:focus {
+  outline: none;
+}
+
+button {
+  color: black;
+  cursor: pointer;
+  padding: 3px 20px;
+  border-width: 2px;
+  background-color: #D0D0D0;
+}
+button:hover {
+  filter: brightness(90%);
+}
+button:active {
+  filter: brightness(75%);
+}
+
+.outer {
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.inner {
+  padding: 25px;
+  margin: 0 auto;
+  min-width: 500px;
+  display: inline-block;
+  background-color: #FFFFFF;
+  box-shadow: 3px 3px 20px #000000;
+
+  border-style: solid;
+  border-radius: 25px;
+  border-width: medium;
+  border-color: #000000;
+}
+
+.title {
+  font-size: 45px;
+  font-weight: lighter;
+  font-family: 'Staatliches';
+}
+
+.text {
+  font-size: 20px;
+  font-weight: lighter;
+  font-family: 'Dosis';
+}
+
+.space-small {
+  height: 15px;
+}
+
+.space-medium {
+  height: 20px;
+}
+
+.space-large {
+  height: 25px;
+}
