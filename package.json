@@ -1,12 +1,16 @@
 {
   "name": "cs4400",
   "version": "1.0.0",
-  "description": "CS4400: Atlanta Movie Project",
-  "main": "index.js",
-  "scripts": {},
-  "author": "Nicholas Boshart",
+  "author": "nichabosh",
   "license": "MIT",
+  "scripts": {
+    "start": "node app.js",
+    "debug": "nodemon app.js"
+  },
   "dependencies": {
-    "eslint": "^6.6.0"
+    "eslint": "^6.6.0",
+    "express": "^4.17.1",
+    "mysql": "^2.17.1",
+    "nodemon": "^2.0.1"
   }
 }
