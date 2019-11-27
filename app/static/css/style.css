@@ -57,6 +57,7 @@ button:active {
 
 .title {
   font-size: 45px;
+  margin: 0px 50px;
   font-weight: lighter;
   font-family: 'Staatliches';
 }
