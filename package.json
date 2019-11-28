@@ -4,8 +4,7 @@
   "author": "nichabosh",
   "license": "MIT",
   "scripts": {
-    "start": "node app.js",
-    "debug": "nodemon app.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "eslint": "^6.6.0",
