@@ -1,18 +1,26 @@
+const bodyParser = require('body-parser');
 const express = require('express');
 const mysql = require('mysql');
-var bodyParser = require('body-parser');
-const fs = require('fs');
-var app = express();
 const path = require('path');
+const fs = require('fs');
+const app = express();
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// establishes connection to database
+/*
+ * As per the instructions, our database is named 'team73'. The server will be hosted
+ * on port 3000, and the user/password attributes below should be changed to match your
+ * local information, as the program's execution will fail otherwise.
+ */
+ app.listen('3000', () => {
+   console.log('[PORT:3000] Atlanta Movie Project 🎉\n');
+ });
+
 const db = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: 'passwordg',
-  database: 'team73',
-  multipleStatements: true,
+  password: 'password',
+  database: 'team73'
 });
 
 db.connect((error) => {
@@ -23,90 +31,74 @@ db.connect((error) => {
   }
 });
 
-const readFile = (filePath, res, contentType) => {
-  fs.readFile(filePath, {},(err, content) => {
-    if (err) {
-      if (err.code == 'ENOENT') {
-        res.end(`Server Error: ${err.code}`);
-      } else {
-        console.log(err.code);
-        res.end(`Server Error: ${err.code}`);
-      }
-    } else {
-      res.writeHead(200, {'Content-Type': contentType});
-      res.end(content, 'utf8');
-    }
+/*
+ * Below lies a collection of general-purpose functions necessary for the application's
+ * exeuction. Any future implementations that do not directly relate to a particular
+ * HTML page should be placed here.
+ *
+ */
+ app.all('*/css/*', (req, res) => {
+   let filePath = path.join('./app', req.path);
+   let contentType = fileType(filePath)
+   readFile(filePath, res, contentType);
+ });
+
+function readFile(filePath, res, contentType) {
+  fs.readFile(filePath, {}, (error, content) => {
+    if (error)
+      res.end(`Service Error: ${error.code}`);
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(content, 'utf8');
   });
-};
+}
 
-const getContentType = (filePath) => {
-  let extname =  path.extname(filePath);
-
-  let contentType = 'text/html';
-  switch(extname) {
-    case '.js':
-      contentType = 'text/javascript';
-      break;
-    case '.css':
-      contentType = 'text/css';
-      break;
-    case '.php':
-      contentType = 'text/php';
-      break;
+function fileType(filePath) {
+  switch (path.extname(filePath)) {
     case '.json':
-      contentType = 'application/json';
-      break;
+      return 'application/json';
+    case '.js':
+      return 'text/javascript';
+    case '.css':
+      return 'text/css';
+    case '.php':
+      return 'text/php';
     case '.png':
-      contentType = 'image/png';
-      break;
+      return 'image/png';
     case '.jpg':
-      contentType = 'image/jpg';
-      break;
+      return 'image/jpg';
     case '.ttf':
-      contentType = 'text/ttf';
+      return 'text/ttf';
+    default:
+      return 'text/html';
   }
-  return contentType;
-};
+}
 
-app.all('*/css/*', (req, res) => {
-  let filePath = path.join('./app', req.path);
-  var contentType = getContentType(filePath)
-  readFile(filePath, res, contentType);
-});
-/* Reference for calling SQL procedures in mysql
-let sql = `call user_login(?, ?); SELECT * FROM UserLogin;`;
-
-db.query(sql, ['calcultron', '333333333'], (error, results) => {
-  if (error) {
-    return console.error(error.message);
-  }
-  console.log(results);
-}); */
-
-// Login page
+/*
+ * SCREEN 1: LOGIN
+ *
+ *  1. This is a login page that all users use to log into the app.
+ *  2. Upon successful login, the user should be taken to the appropriate functionality screen.
+ *  3. Upon invalid login, the app should notify the user, and the user should be allowed to retry.
+ */
 app.get('/', (req, res)=>{
-  console.log(req.originalUrl);
   let filePath = 'app/templates/index.html';
-  var contentType = getContentType(filePath);
+  let contentType = fileType(filePath);
   readFile(filePath, res, contentType);
 });
 
 app.post('/index.html', (req, res) => {
-  const {username, password} = req.body;
-  let sql = `call user_login(?, ?); SELECT * FROM UserLogin;`;
-  db.query(sql, [username, password], (error, results) => {
-    if (error) {
-      return console.error(error.message);
-    }
-    if (results[1].length != 0) {
-      const user = results[1][0];
-      if (user.isCustomer == 1) {
-        if (user.isManager == 1) {
-          res.redirect('/app/templates/registration/manager-customer.html');
-        } else {
-          res.redirect('/app/templates/registration/customer.html');
-        }
-      } else if (user.isManager == 1) {
+  let create = `CALL user_login(?, ?)`;
+  let { username, password } = req.body;
+  db.query(create, [username, password], (error, results) => {});
+
+  let access = `SELECT * FROM UserLogin`;
+  db.query(access, (error, results) => {
+    if (results.length > 0) {
+      if (results[0].isManager == 1 && results[0].isCustomer == 1) {
+        res.redirect('/app/templates/registration/manager-customer.html');
+      } else if (results[0].isCustomer == 1) {
+        res.redirect('/app/templates/registration/customer.html');
+      } else if (results[0].isManager == 1) {
         res.redirect('/app/templates/registration/manager.html');
       } else {
         res.redirect('/app/templates/registration/user.html');
@@ -115,18 +107,4 @@ app.post('/index.html', (req, res) => {
       res.redirect('/');
     }
   });
-});
-
-/* Testing app.get functionality
-// ex: fetches password of a user given their username
-app.get('/password/:username', (req, res) => {
-  const sql = `SELECT password FROM user WHERE username = ?`;
-  db.query(sql, [req.params.username], (error, result) => {
-    for (let i = 0; i < result.length; i++)
-      console.log(result[i].password);
-  });
-});*/
-
-app.listen('3000', () => {
-  console.log('CS4400: Atlanta Movie Project 🎉\n');
 });
