@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: 'password',
+  password: 'Password',
   database: 'team73'
 });
 
@@ -41,7 +41,10 @@ const pages = ['/functionality/admin-customer.html',   '/functionality/admin.htm
                '/functionality/manager.html',          '/functionality/user.html',
                '/registration/manager-customer.html',  '/registration/customer.html',
                '/registration/user.html',              '/registration/manager.html',
-               '/registration/navigation.html'];
+               '/registration/navigation.html',        '/functionality/theater_overview.html',
+               '/functionality/explore_movie.html',    '/functionality/explore_theater.html',
+               '/functionality/schedule_movie.html',   '/functionality/view_history.html',
+               '/functionality/visit_history.html'];
 
 for (let i = 0; i < pages.length; i++) {
   app.get(pages[i], (req, res) => {
@@ -121,6 +124,50 @@ app.post('/login', (req, res) => {
     } else {
       res.redirect('/');
     }
+  });
+});
+
+app.post('/theater_overview', (req, res) => {
+  var {movie_name, min_duration, max_duration, min_release_date, max_release_date, min_play_date,
+    max_play_date, not_played_movie_only} = req.body;
+  if(min_duration=='') {
+    min_duration = 0;
+  }
+  if(max_duration=='') {
+    const maxDuration = 'SELECT MAX(duration) FROM movie';
+    db.query(maxDuration, (error, results) => {
+      max_duration = results[0];
+    });
+  }
+  if(min_release_date==''){
+    min_release_date='1000-01-01';
+  }
+  if(max_release_date=='') {
+    const maxReleaseDate = 'SELECT MAX(movReleaseDate) FROM movie';
+    db.query(maxReleaseDate, (error, results) => {
+      max_release_date = results[0];
+    });
+  }
+  if(min_play_date=='') {
+    min_play_date='1000-01-01';
+  }
+  if(max_play_date=='') {
+    const maxPlayDate = 'SELECT MAX(movPlayDate) FROM movieplay';
+    db.query(maxPlayDate, (error, results) => {
+      max_play_date = results[0];
+    });
+  }
+  if(!not_played_movie_only) {
+    not_played_movie_only = false;
+  } else {
+    not_played_movie_only = true;
+  }
+  let sql = 'CALL manager_filter_th(?, ?, ?, ?, ?, ?, ?, ?)';
+  db.query(sql, [movie_name, min_duration, max_duration, min_release_date, max_release_date,
+    min_play_date, max_play_date, not_played_movie_only], (error, results) => {});
+  let sqlResults = 'SELECT * FROM ManFilterTh';
+  db.query(sqlResults, (error, results) => {
+    res.redirect('/functionality/theater_overview.html?'+JSON.stringify(results));  //Terrible Terrible way of doing things but what can you do XD
   });
 });
 
