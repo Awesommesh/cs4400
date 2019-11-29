@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Theater Overview</title>
+
+    <link rel="icon" type="image/jpg" href="../../static/imgs/favicon.jpg"/>
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css">
+</head>
+
+<body>
+<div class="outer">
+    <div class="inner">
+        <span class="title">Theater Overview</span>
+        <div class="space-large"></div>
+        <form action="/theater_overview" method="POST">
+            <span class="text">Movie Name (Include):</span>
+            <input name="movie_name">
+            <span class="text">Movie Duration:</span>
+            <input name="min_duration">
+            <span class="text">--</span>
+            <input name="max_duration"> </br>
+            <span class="text">Movie Release Date:</span>
+            <input name="min_release_date">
+            <span class="text">--</span>
+            <input name="max_release_date"> </br>
+            <span class="text">Movie Play Date:</span>
+            <input name="min_play_date">
+            <span class="text">--</span>
+            <input name="max_play_date"> </br>
+            <input type="checkbox" name="not_played_movie_only" value="True"> Only Include Not Played Movies</br>
+            <button type="submit">Filter</button> </br>
+        </form>
+        <div id="output"></div>
+        <button type="button" onclick="window.location.href='funcNav'">Back</button>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+  function generateTable(table, data) {
+	for (let element of data) {
+	  let row = table.insertRow();
+	  for (key in element) {
+		let cell = row.insertCell();
+		let text = document.createTextNode(element[key]);
+		cell.appendChild(text);
+	  }
+	}
+  }
+  var parameters = decodeURIComponent(location.search.substring(1));
+  if (parameters.length>0) {
+	var results = JSON.parse(parameters);
+	console.log(results);
+	document.getElementById("output").innerHTML = "<table style=\"width:100%\">\n" +
+      "  <tr>\n" +
+      "    <th>Movie Name</th>\n" +
+      "    <th>Duration</th> \n" +
+      "    <th>Release Date</th>\n" +
+      "    <th>Play Date</th>\n" +
+      "  </tr>\n";
+    document.getElementById("output").innerHTML += "</table>";
+	let table = document.querySelector("table");
+	console.log(table);
+	generateTable(table, results);
+  }
+</script>

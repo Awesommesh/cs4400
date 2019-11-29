@@ -84,3 +84,11 @@ button:active {
 .minimum {
   min-width: 0px;
 }
+
+table, th, td {
+  border: 1px solid black;
+}
+
+.dropdown {
+  display:inline-block;
+}

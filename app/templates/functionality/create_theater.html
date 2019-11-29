@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Create Theater</title>
+
+    <link rel="icon" type="image/jpg" href="../../static/imgs/favicon.jpg"/>
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css">
+</head>
+
+<body>
+<div class="outer">
+    <div class="inner">
+        <span class="title">Create Theater</span>
+        <div class="space-large"></div>
+        <form action="/create_theater" method="POST">
+            <span class="text">Name:</span>
+            <input name="name" required>
+            <span class="text">Company</span>
+            <div class="dropdown" id="dropdown1"></div> </br>
+            <span class="text">Street Address:</span>
+            <input name="address" required><br>
+            <span class="text">City:</span>
+            <input name="city" required>
+            <span class="text">State:</span>
+            <select name="state">
+                <option value="AL">AL</option>
+                <option value="AK">AK</option>
+                <option value="AR">AR</option>
+                <option value="AZ">AZ</option>
+                <option value="CA">CA</option>
+                <option value="CO">CO</option>
+                <option value="CT">CT</option>
+                <option value="DC">DC</option>
+                <option value="DE">DE</option>
+                <option value="FL">FL</option>
+                <option value="GA">GA</option>
+                <option value="HI">HI</option>
+                <option value="IA">IA</option>
+                <option value="ID">ID</option>
+                <option value="IL">IL</option>
+                <option value="IN">IN</option>
+                <option value="KS">KS</option>
+                <option value="KY">KY</option>
+                <option value="LA">LA</option>
+                <option value="MA">MA</option>
+                <option value="MD">MD</option>
+                <option value="ME">ME</option>
+                <option value="MI">MI</option>
+                <option value="MN">MN</option>
+                <option value="MO">MO</option>
+                <option value="MS">MS</option>
+                <option value="MT">MT</option>
+                <option value="NC">NC</option>
+                <option value="NE">NE</option>
+                <option value="NH">NH</option>
+                <option value="NJ">NJ</option>
+                <option value="NM">NM</option>
+                <option value="NV">NV</option>
+                <option value="NY">NY</option>
+                <option value="ND">ND</option>
+                <option value="OH">OH</option>
+                <option value="OK">OK</option>
+                <option value="OR">OR</option>
+                <option value="PA">PA</option>
+                <option value="RI">RI</option>
+                <option value="SC">SC</option>
+                <option value="SD">SD</option>
+                <option value="TN">TN</option>
+                <option value="TX">TX</option>
+                <option value="UT">UT</option>
+                <option value="VT">VT</option>
+                <option value="VA">VA</option>
+                <option value="WA">WA</option>
+                <option value="WI">WI</option>
+                <option value="WV">WV</option>
+                <option value="WY">WY</option>
+            </select>
+            <span class="text">Zip Code:</span>
+            <input name="zipcode" required></br>
+            <span class="text">Capacity:</span>
+            <input name="capacity" required>
+            <span class="text">Manager</span>
+            <div class="dropdown" id="dropdown2"></div> </br>
+            <button type="button" onclick="window.location.href='manage_company.html'">Back</button>
+            <button type="submit">Create</button> </br>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+<script>
+  var selector2 = document.getElementById("dropdown2");
+  fetch('http://localhost:3000/managerList/')
+	.then((res) => {
+	  if (res.ok) {
+		return res.json();
+	  }
+	})
+	.then((rows) => {
+	  console.log(rows);
+	  for (var i = 0; i < rows.length; i++) {
+		selector2.innerHTML+="<option value='"+i+"' required>"+rows[i].firstname+" "+rows[i].lastname+"</option>";
+	  }
+	  selector2.innerHTML = "<select name=\"manIndex\">" + selector2.innerHTML + "</select>";
+	})
+	.catch(console.log);
+
+  function resetMangerList() {
+    var comSelector = document.getElementById("com");
+    console.log(comSelector.value);
+    fetch('http://localhost:3000/managerList/'+comSelector.value)
+	  .then((res) => {
+	    if (res.ok) {
+		  return res.json();
+	    }
+	  })
+	  .then((rows) => {
+	    console.log(rows);
+        selector2 = document.getElementById("dropdown2");
+        selector2.innerHTML = "";
+	    for (var i = 0; i < rows.length; i++) {
+		  selector2.innerHTML+="<option value='"+i+"' required>"+rows[i].firstname+" "+rows[i].lastname+"</option>";
+	    }
+	    selector2.innerHTML = "<select name=\"manIndex\">" + selector2.innerHTML + "</select>";
+	  })
+	  .catch(console.log);
+  }
+
+  var selector1 = document.getElementById("dropdown1");
+  fetch('http://localhost:3000/companyList/')
+	.then((res) => {
+	  if (res.ok) {
+		return res.json();
+	  }
+	})
+	.then((rows) => {
+	  for (var i = 0; i < rows.length; i++) {
+		selector1.innerHTML+="<option value='"+i+"' required>"+rows[i].comName+"</option>";
+	  }
+	  selector1.innerHTML = "<select id=\"com\" name=\"comName\" onchange=\"resetMangerList()\">" + selector1.innerHTML + "</select>";
+	})
+	.catch(console.log);
+</script>

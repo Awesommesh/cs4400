@@ -26,3 +26,10 @@
     </div>
   </body>
 </html>
+<script>
+  var parameters = decodeURIComponent(location.search.substring(1));
+  if (parameters.length>0 && parameters.charAt(0) == '[') {
+    var results = JSON.parse(parameters);
+    alert(results[0].err);
+  }
+</script>

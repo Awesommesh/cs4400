@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Company Detail</title>
+
+    <link rel="icon" type="image/jpg" href="../../static/imgs/favicon.jpg"/>
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css">
+</head>
+
+<body>
+<div class="outer">
+    <div class="inner">
+        <span class="title">Company Detail</span>
+        <div class="space-large"></div>
+
+        <div id="output"></div>
+        <div class="space-medium"></div>
+        <button type="button" onclick="window.location.href='manage_company.html'">Back</button>
+    </div>
+</div>
+</body>
+</html>
+<script>
+  function generateTable(table, data) {
+	for (let element of data) {
+	  let row = table.insertRow();
+	  for (key in element) {
+		let cell = row.insertCell();
+		let text = document.createTextNode(element[key]);
+		cell.appendChild(text);
+	  }
+	}
+  }
+
+  var parameters = decodeURIComponent(location.search.substring(1));
+  if (parameters.length>0 && parameters.charAt(0) != 'u') {
+	var results = JSON.parse(parameters);
+	var pageOut = document.getElementById("output");
+	pageOut.innerHTML += "<span class='title'>Name: </span>" + "<span class='text'>" + results[0].comName + "</span><br>";
+	pageOut.innerHTML += "<span class='title'>Employees: </span>";
+	for (var i = 0; i < results[1].length; i++) {
+	  if (i !=0) {
+	    pageOut.innerHTML += "<span class='text'>, </span>";
+      }
+	  pageOut.innerHTML += "<span class='text'>"+results[1][i].empFirstname+" "+results[1][i].empLastname+"</span>";
+    }
+	pageOut.innerHTML+="<br><div class=\"space-large\"></div>"+"<span class='title'>Theaters</span>";
+
+	pageOut.innerHTML += "<table style=\"width:100%\">\n" +
+	  "  <tr>\n" +
+	  "    <th>Name</th>\n" +
+	  "    <th>Manager</th> \n" +
+	  "    <th>City</th>\n" +
+	  "    <th>State</th>\n" +
+	  "    <th>Capacity</th>\n" +
+	  "  </tr>\n";
+	pageOut.innerHTML += "</table>";
+	let table = document.querySelector("table");
+	generateTable(table, results[2]);
+  }
+</script>
