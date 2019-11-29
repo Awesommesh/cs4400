@@ -247,6 +247,63 @@ app.post("/explore_movie", (req, res) => {
   }
 });
 
+app.post('/explore_theater', (req,  res)=> {
+  var {thName, comName, city, state} = req.body;
+  var th_name, com_name;
+  if (thName=="ALL") {
+    th_name = thName;
+    let sqlGetCompanyName = 'SELECT comName FROM company';
+    db.query(sqlGetCompanyName, (error, results) => {
+      com_name = results[comName].comName;
+      let sql = 'CALL user_filter_th(?, ?, ?, ?)';
+      db.query(sql, [th_name, com_name, city, state], (error, results) => {});
+      let sqlResults = 'SELECT * FROM UserFilterTh';
+      db.query(sqlResults, (error, results) => {
+        res.redirect('/functionality/explore_theater.html?' + JSON.stringify(results));
+      });
+    });
+  } else {
+    let sqlGetMovieName = 'SELECT thName FROM theater';
+    db.query(sqlGetMovieName, (error, results) => {
+      th_name = results[thName].thName;
+      let sqlGetCompanyName = 'SELECT comName FROM company';
+      db.query(sqlGetCompanyName, (error, results) => {
+        com_name = results[comName].comName;
+        let sql = 'CALL user_filter_th(?, ?, ?, ?)';
+        db.query(sql, [th_name, com_name, city, state], (error, results) => {});
+        let sqlResults = 'SELECT * FROM UserFilterTh';
+        db.query(sqlResults, (error, results) => {
+          res.redirect('/functionality/explore_theater.html?' + JSON.stringify(results));
+        });
+      });
+    });
+  }
+});
+
+app.post('/visit_history', (req, res)=> {
+  var {comName, min_visit_date, max_visit_date} = req.body;
+  if(min_visit_date=='') {
+    min_visit_date='1000-01-01';
+  }
+  if(max_visit_date=='') {
+    const maxPlayDate = 'SELECT MAX(visitDate) AS visitDate FROM uservisittheater';
+    db.query(maxPlayDate, (error, results) => {
+      max_visit_date = results[0].visitDate;
+    });
+  }
+  var com_name;
+  let sqlGetCompanyName = 'SELECT comName FROM company';
+  db.query(sqlGetCompanyName, (error, results) => {
+    com_name = results[comName].comName;
+    const sql = 'CALL user_filter_visitHistory(?, ?, ?)';
+    db.query(sql, [req.session.username, min_visit_date, max_visit_date], (error, req) =>{});
+    const sqlResults = "SELECT * FROM UserVisitHistory WHERE comName=\""+com_name+"\"";
+    db.query(sqlResults, (error, results)=> {
+      res.redirect('/functionality/visit_history.html?' + JSON.stringify(results));
+    });
+  });
+});
+
 
 app.get('/movieList/', (req, res)=> {
   let sql = 'SELECT movName FROM movie';
@@ -258,6 +315,22 @@ app.get('/movieList/', (req, res)=> {
 app.get('/companyList/', (req, res)=> {
   let sql = 'SELECT comName FROM company';
   db.query(sql, (error, results)=> {
+    res.json(results);
+  });
+});
+
+app.get('/theaterList/', (req, res)=> {
+  let sql = 'SELECT thName FROM theater';
+  db.query(sql, (error, results)=> {
+    res.json(results);
+  });
+});
+
+app.get('/viewHistory', (req, res)=> {
+  let sql = "CALL customer_view_history(?)";
+  db.query(sql, [req.session.username], (error, results)=> {});
+  let sqlResults = "SELECT * FROM CosViewHistory"
+  db.query(sqlResults, (error, results)=>{
     res.json(results);
   });
 });
@@ -292,13 +365,29 @@ app.post('/view_movie', (req, res) => {
 
   let sqlGetRowData = 'SELECT * FROM CosFilterMovie';
   db.query(sqlGetRowData, (error, results) => {
-    var row_data= results[row];
-    let sql = 'CALL customer_view_mov(?, ?, ?, ?, ?, ?)';
-    console.log([view_creditCard, row_data.movName, row_data.movReleaseDate, row_data.thName, row_data.comName, row_data.movPlayDate]);
-    db.query(sql, [view_creditCard, row_data.movName, row_data.movReleaseDate, row_data.thName,
-      row_data.comName, row_data.movPlayDate], (error, results)=> {
-      console.log(results);
-    });
+    if (row < results.length) {
+      var row_data = results[row];
+      let sql = 'CALL customer_view_mov(?, ?, ?, ?, ?, ?)';
+      db.query(sql, [view_creditCard, row_data.movName, row_data.movReleaseDate, row_data.thName,
+        row_data.comName, row_data.movPlayDate], (error, results)=> {
+        res.redirect("/functionality/explore_movie.html");
+      });
+    }
+  });
+});
+
+app.post('/visit_theater', (req, res) => {
+  var {row, visitDate} = req.body;
+
+  let sqlGetRowData = 'SELECT * FROM UserFilterTh';
+  db.query(sqlGetRowData, (error, results) => {
+    if (row < results.length) {
+      var row_data = results[row];
+      let sql = 'CALL user_visit_th(?, ?, ?, ?)';
+      db.query(sql, [row_data.thName, row_data.comName, visitDate, req.session.username], (error, results)=> {
+        res.redirect("/functionality/explore_theater.html");
+      });
+    }
   });
 });
 

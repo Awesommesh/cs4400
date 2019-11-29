@@ -12,7 +12,43 @@
 <div class="outer">
     <div class="inner">
         <span class="title">View History</span>
+        <div class="space-large"></div>
+        <div id="output"></div>
+        <button type="button" onclick="window.location.href='funcNav'">Back</button>
     </div>
 </div>
 </body>
 </html>
+<script type="text/javascript">
+  function generateTable(table, data) {
+	for (let element of data) {
+	  let row = table.insertRow();
+	  for (key in element) {
+		let cell = row.insertCell();
+		let text = document.createTextNode(element[key]);
+		cell.appendChild(text);
+	  }
+	}
+  }
+
+  fetch('http://localhost:3000/viewHistory/')
+	.then((res) => {
+	  if (res.ok) {
+		return res.json();
+	  }
+	})
+	.then((rows) => {
+	  document.getElementById("output").innerHTML = "<table style=\"width:100%\">\n" +
+		"  <tr>\n" +
+		"    <th>Movie</th>\n" +
+		"    <th>Theater</th> \n" +
+		"    <th>Company</th>\n" +
+	    "    <th>Card #</th>\n" +
+		"    <th>View Date</th>\n" +
+		"  </tr>\n";
+	  document.getElementById("output").innerHTML += "</table>";
+	  let table = document.querySelector("table");
+	  generateTable(table, rows);
+	})
+	.catch(console.log);
+</script>
