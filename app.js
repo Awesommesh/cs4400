@@ -30,7 +30,7 @@ app.listen('3000', () => {
 const db = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: 'password',
+  password: 'Password',
   database: 'team73'
 });
 
@@ -605,15 +605,15 @@ app.post('/register_user', (req, res) => {
   let { fname, lname, username, password, confirm } = req.body;
   let sql = 'CALL user_register(?, ?, ?, ?)';
 
-  if (password === confirm) {
+  if (password === confirm && password.length >= 8) {
     db.query(sql, [username, password, fname, lname], (error, results) => {
       if (results.affectedRows > 0)
-        res.redirect('functionality/user.html');
+        res.redirect('/functionality/user.html');
       else
-        res.redirect('registration/user.html');
+        res.redirect('/registration/user.html');
     });
   } else {
-    res.redirect('registration/user.html');
+    res.redirect('/registration/user.html');
   }
 });
 
@@ -627,4 +627,4 @@ app.post('/register_customer', (req, res) => {
 
 app.post('/register_manager_customer', (req, res) => {
   // to-do!
-});}
+});
