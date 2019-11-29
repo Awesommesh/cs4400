@@ -12,7 +12,176 @@
 <div class="outer">
     <div class="inner">
         <span class="title">Explore Movie</span>
+        <div class="space-large"></div>
+        <form action="/explore_movie" method="POST">
+            <span class="text">Movie Name:</span>
+            <div class="dropdown" id="dropdown"></div>
+            <span class="text">Company Name:</span>
+            <div class="dropdown" id="dropdown1"></div> </br>
+            <span class="text">City:</span>
+            <input name="city" required>
+            <span class="text">State:</span>
+            <select name="state" required>
+                <option value="AL">Alabama</option>
+                <option value="AK">Alaska</option>
+                <option value="AZ">Arizona</option>
+                <option value="AR">Arkansas</option>
+                <option value="CA">California</option>
+                <option value="CO">Colorado</option>
+                <option value="CT">Connecticut</option>
+                <option value="DE">Delaware</option>
+                <option value="DC">District Of Columbia</option>
+                <option value="FL">Florida</option>
+                <option value="GA">Georgia</option>
+                <option value="HI">Hawaii</option>
+                <option value="ID">Idaho</option>
+                <option value="IL">Illinois</option>
+                <option value="IN">Indiana</option>
+                <option value="IA">Iowa</option>
+                <option value="KS">Kansas</option>
+                <option value="KY">Kentucky</option>
+                <option value="LA">Louisiana</option>
+                <option value="ME">Maine</option>
+                <option value="MD">Maryland</option>
+                <option value="MA">Massachusetts</option>
+                <option value="MI">Michigan</option>
+                <option value="MN">Minnesota</option>
+                <option value="MS">Mississippi</option>
+                <option value="MO">Missouri</option>
+                <option value="MT">Montana</option>
+                <option value="NE">Nebraska</option>
+                <option value="NV">Nevada</option>
+                <option value="NH">New Hampshire</option>
+                <option value="NJ">New Jersey</option>
+                <option value="NM">New Mexico</option>
+                <option value="NY">New York</option>
+                <option value="NC">North Carolina</option>
+                <option value="ND">North Dakota</option>
+                <option value="OH">Ohio</option>
+                <option value="OK">Oklahoma</option>
+                <option value="OR">Oregon</option>
+                <option value="PA">Pennsylvania</option>
+                <option value="RI">Rhode Island</option>
+                <option value="SC">South Carolina</option>
+                <option value="SD">South Dakota</option>
+                <option value="TN">Tennessee</option>
+                <option value="TX">Texas</option>
+                <option value="UT">Utah</option>
+                <option value="VT">Vermont</option>
+                <option value="VA">Virginia</option>
+                <option value="WA">Washington</option>
+                <option value="WV">West Virginia</option>
+                <option value="WI">Wisconsin</option>
+                <option value="WY">Wyoming</option>
+            </select> </br>
+            <span class="text">Movie Play Date:</span>
+            <input name="min_play_date">
+            <span class="text">--</span>
+            <input name="max_play_date"> </br>
+            <button type="submit">Filter</button> </br>
+        </form>
+        <div id="output"></div>
+        <form action="/view_movie" method="POST">
+            <span class="text">Row Number</span>
+            <input name="row" required> </br>
+            <button type="button" onclick="window.location.href='funcNav'">Back</button>
+            <span class="text">Card Number</span>
+            <div class="dropdown" id="dropdown2"></div>
+            <button type="submit">View</button>
+        </form>
     </div>
 </div>
 </body>
 </html>
+<script type="text/javascript">
+
+  function generateTable(table, data) {
+    var count = 0;
+	for (let element of data) {
+	  var row = table.insertRow();
+	  var cell = row.insertCell();
+	  var text = document.createTextNode(count);
+	  cell.appendChild(text);
+      var cell = row.insertCell();
+      var text = document.createTextNode(element.movName);
+      cell.appendChild(text);
+      cell = row.insertCell();
+      text = document.createTextNode(element.thName);
+	  cell.appendChild(text);
+	  cell = row.insertCell();
+	  text = document.createTextNode(element.thStreet+", "+element.thCity+", "+element.thState+" "+element.thZipcode);
+	  cell.appendChild(text);
+	  cell = row.insertCell();
+	  text = document.createTextNode(element.comName);
+	  cell.appendChild(text);
+	  cell = row.insertCell();
+	  text = document.createTextNode(element.movPlayDate);
+	  cell.appendChild(text);
+	  count++;
+    }
+  }
+
+  var selector = document.getElementById("dropdown");
+  fetch('http://localhost:3000/movieList/')
+	.then((res) => {
+	  if (res.ok) {
+		return res.json();
+	  }
+	})
+	.then((rows) => {
+	  selector.innerHTML += "<option value='ALL'>ALL</option>";
+	  for (var i = 0; i < rows.length; i++) {
+		selector.innerHTML+="<option value='"+i+"' required>"+rows[i].movName+"</option>";
+	  }
+	  selector.innerHTML = "<select name=\"movName\">" + selector.innerHTML + "</select>";
+	})
+	.catch(console.log);
+
+  var selector1 = document.getElementById("dropdown1");
+  fetch('http://localhost:3000/companyList/')
+    .then((res) => {
+	  if (res.ok) {
+	    return res.json();
+	  }
+    })
+    .then((rows) => {
+	  for (var i = 0; i < rows.length; i++) {
+	    selector1.innerHTML+="<option value='"+i+"' required>"+rows[i].comName+"</option>";
+	  }
+	  selector1.innerHTML = "<select name=\"comName\">" + selector1.innerHTML + "</select>";
+    })
+    .catch(console.log);
+
+  var selector2 = document.getElementById("dropdown2");
+  fetch('http://localhost:3000/creditCardList/')
+    .then((res) => {
+	  if (res.ok) {
+	    return res.json();
+	  }
+    })
+    .then((rows) => {
+	  for (var i = 0; i < rows.length; i++) {
+	    selector2.innerHTML+="<option value='"+i+"' required>"+rows[i].creditCardNum+"</option>";
+	  }
+	  selector2.innerHTML = "<select name=\"creditCardNum\">" + selector2.innerHTML + "</select>";
+    })
+    .catch(console.log);
+  var parameters = decodeURIComponent(location.search.substring(1));
+
+  if (parameters.length>0 && parameters.charAt(0) != 'u') {
+    var results = JSON.parse(parameters);
+    console.log(results);
+    document.getElementById("output").innerHTML = "<table style=\"width:100%\">\n" +
+	  "  <tr>\n" +
+      "    <th>Row #</th>\n" +
+	  "    <th>Movie</th>\n" +
+	  "    <th>Theater</th> \n" +
+	  "    <th>Address</th>\n" +
+	  "    <th>Company</th>\n" +
+	  "    <th>Play Date</th>\n" +
+	  "  </tr>\n";
+    document.getElementById("output").innerHTML += "</table>";
+    let table = document.querySelector("table");
+    generateTable(table, results);
+  }
+</script>

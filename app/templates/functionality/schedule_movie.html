@@ -12,7 +12,36 @@
 <div class="outer">
     <div class="inner">
         <span class="title">Schedule Movie</span>
+        <div class="space-large"></div>
+
+        <form action="/schedule_movie" method="POST">
+            <span class="text">Name:</span>
+            <div class="dropdown" id="dropdown"></div>
+            <span class="text">Movie Release Date:</span>
+            <input name="mov_release_date" required> </br>
+            <span class="text">Movie Play Date:</span>
+            <input name="mov_play_date" required> </br>
+            <button type="button" onclick="window.location.href='funcNav'">Back</button>
+            <button type="submit">Add</button> </br>
+        </form>
+
     </div>
 </div>
 </body>
 </html>
+<script type="text/javascript">
+  var selector = document.getElementById("dropdown");
+  fetch('http://localhost:3000/movieList/')
+	.then((res) => {
+	  if (res.ok) {
+		return res.json();
+	  }
+	})
+	.then((rows) => {
+	  for (var i = 0; i < rows.length; i++) {
+	    selector.innerHTML+="<option value='"+i+"'>"+rows[i].movName+"</option>";
+      }
+	  selector.innerHTML = "<select name=\"movName\" required>" + selector.innerHTML + "</select>";
+	})
+	.catch(console.log);
+</script>
