@@ -570,6 +570,7 @@ app.post('/create_theater', (req, res)=> {
     db.query(getManUserSQL, (error, results) => {
       manUsername = results[manIndex].username;
       let sql = "CALL admin_create_theater(?, ?, ?, ?, ?, ?, ?, ?)";
+      console.log([name, com_name, address, city, state, zipcode, capacity, manUsername]);
       db.query(sql, [name, com_name, address, city, state, zipcode, capacity, manUsername], (error, results)  => {
         if (results == undefined) {
           console.log("Invalid input to create theater!");
