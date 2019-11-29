@@ -55,7 +55,9 @@ const pages = ['/functionality/admin-customer.html',   '/functionality/admin.htm
                '/registration/navigation.html',        '/functionality/theater_overview.html',
                '/functionality/explore_movie.html',    '/functionality/explore_theater.html',
                '/functionality/schedule_movie.html',   '/functionality/view_history.html',
-               '/functionality/visit_history.html'];
+               '/functionality/visit_history.html',    '/functionality/manage_user.html',
+               '/functionality/manage_company.html',   '/functionality/create_movie.html',
+               '/functionality/create_theater.html',   '/functionality/company_detail.html'];
 
 for (let i = 0; i < pages.length; i++) {
   app.get(pages[i], (req, res) => {
@@ -84,6 +86,13 @@ app.get('/functionality/funcNav', (req, res) => {
 });
 
 app.all('*/css/*', (req, res) => {
+  let filePath = path.join('./app', req.path);
+  let contentType = fileType(filePath);
+  readFile(filePath, res, contentType);
+});
+
+app.all('*/static/imgs/*', (req, res) => {
+  console.log(req);
   let filePath = path.join('./app', req.path);
   let contentType = fileType(filePath);
   readFile(filePath, res, contentType);
@@ -148,10 +157,14 @@ app.post('/login', (req, res) => {
       req.session.isCustomer = results[0].isCustomer;
       if (results[0].isManager == 1 && results[0].isCustomer == 1) {
         res.redirect('functionality/manager-customer.html');
+      } else if (results[0].isAdmin && results[0].isCustomer == 1) {
+        res.redirect('functionality/admin-customer.html');
       } else if (results[0].isCustomer == 1) {
         res.redirect('functionality/customer.html');
       } else if (results[0].isManager == 1) {
         res.redirect('functionality/manager.html');
+      } else if (results[0].isAdmin == 1) {
+        res.redirect('functionality/admin.html');
       } else {
         res.redirect('functionality/user.html');
       }
@@ -304,6 +317,52 @@ app.post('/visit_history', (req, res)=> {
   });
 });
 
+app.post('/manage_user', (req, res) => {
+  var {username, status, sortBy, sortDir} = req.body;
+  let sql = 'CALL admin_filter_user(?, ?, ?, ?)';
+  db.query(sql, [username, status, sortBy, sortDir], (error, results) => {});
+  let sqlResults = 'SELECT * FROM AdFilterUser';
+  db.query(sqlResults, (error, results) => {
+    res.redirect('/functionality/manage_user.html?' + JSON.stringify(results));
+  });
+});
+
+app.post('/manage_company', (req, res) => {
+  var {comName, min_city, max_city, min_theater, max_theater, min_employee, max_employee, sortBy, sortDir} = req.body;
+  var com_name;
+  if (comName == "ALL") {
+    com_name = comName
+  } else {
+    let sqlGetCompanyName = 'SELECT comName FROM company';
+    db.query(sqlGetCompanyName, (error, results) => {
+      com_name = results[comName].comName;
+    });
+  }
+  if (min_city == '') {
+    min_city = 0;
+  }
+  if (min_theater == '') {
+    min_theater = 0;
+  }
+  if (min_employee == '') {
+    min_employee = 0;
+  }
+  if (max_city == '') {
+    max_city = ""+10000;
+  }
+  if (max_theater == '') {
+    max_theater = ""+10000;
+  }
+  if (max_employee == '') {
+    max_employee = ""+100000000;
+  }
+  let sql = 'CALL admin_filter_company(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  db.query(sql, [com_name, min_city, max_city, min_theater, max_theater, min_employee, max_employee, sortBy, sortDir], (error, results) => {});
+  let sqlResults = 'SELECT * FROM AdFilterCom';
+  db.query(sqlResults, (error, results) => {
+    res.redirect('/functionality/manage_company.html?' + JSON.stringify(results));
+  });
+});
 
 app.get('/movieList/', (req, res)=> {
   let sql = 'SELECT movName FROM movie';
@@ -321,6 +380,13 @@ app.get('/companyList/', (req, res)=> {
 
 app.get('/theaterList/', (req, res)=> {
   let sql = 'SELECT thName FROM theater';
+  db.query(sql, (error, results)=> {
+    res.json(results);
+  });
+});
+
+app.get('/managerList/', (req, res)=> {
+  let sql = 'SELECT User.firstname, User.lastname FROM user  WHERE username IN (SELECT username FROM manager) AND username NOT IN (SELECT manUsername FROM theater)';
   db.query(sql, (error, results)=> {
     res.json(results);
   });
@@ -388,6 +454,63 @@ app.post('/visit_theater', (req, res) => {
         res.redirect("/functionality/explore_theater.html");
       });
     }
+  });
+});
+
+app.post('/affect_user', (req, res) => {
+  var {username, accept, decline} = req.body;
+  if (accept == "true") {
+    const sql = 'CALL admin_approve_user(?)';
+    db.query(sql, [username], (error, results) => {});
+  } else {
+    const sql = 'CALL admin_decline_user(?)';
+    db.query(sql, [username], (error, results) => {});
+  }
+  res.redirect('/functionality/manage_user.html');
+});
+
+app.post('/detail_company', (req, res) => {
+  var {comName} = req.body;
+  comName = comName.trim();
+  var sql = 'CALL admin_view_comDetail_emp(?)';
+  db.query(sql, [comName], (error, results) => {});
+  sql = 'CALL admin_view_comDetail_th(?)';
+  db.query(sql, [comName], (error, results) => {});
+  var emp, th;
+  sql = 'SELECT * FROM AdComDetailEmp';
+  db.query(sql, (error, results) => {
+    emp = JSON.stringify(results);
+    sql = 'SELECT * FROM AdComDetailTh';
+    db.query(sql, (error, results) => {
+      th = JSON.stringify(results);
+      const stringAppend = '[' + '{"comName":"' + comName + '"},' + emp + ',' + th + ']';
+      res.redirect('/functionality/company_detail.html?'+stringAppend);
+    });
+  });
+});
+
+app.post('/create_theater', (req, res)=> {
+  var {name, comName, address, city, state, zipcode, capacity, manIndex} = req.body;
+  var com_name, manUsername;
+  let sqlGetCompanyName = 'SELECT comName FROM company';
+  db.query(sqlGetCompanyName, (error, results) => {
+    com_name = results[comName].comName;
+    let getManUserSQL = 'SELECT username FROM manager WHERE username NOT IN (SELECT manUsername FROM theater)';
+    db.query(getManUserSQL, (error, results) => {
+      manUsername = results[manIndex].username;
+      let sql = "CALL admin_create_theater(?, ?, ?, ?, ?, ?, ?, ?)";
+      db.query(sql, [name, com_name, address, city, state, zipcode, capacity, manUsername], (error, results)  => {
+        res.redirect('/functionality/create_theater.html');
+      });
+    });
+  });
+});
+
+app.post('/create_movie', (req, res) => {
+  const {name, duration, release_date}=req.body;
+  let sql = 'CALL admin_create_mov(?, ?, ?)';
+  db.query(sql, [name, duration, release_date], (error, results) => {
+    res.redirect('/functionality/create_movie.html');
   });
 });
 

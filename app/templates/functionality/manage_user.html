@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manage User</title>
+
+    <link rel="icon" type="image/jpg" href="../../static/imgs/favicon.jpg"/>
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css">
+</head>
+
+<body>
+<div class="outer">
+    <div class="inner">
+        <span class="title">Manage User</span>
+        <div class="space-large"></div>
+        <form action="/manage_user" method="POST">
+            <span class="text">Username:</span>
+            <input name="username">
+            <span class="text">Status:</span>
+            <select name="status" required>
+                <option value="All">ALL</option>
+                <option value="Pending">Pending</option>
+                <option value="Declined">Declined</option>
+                <option value="Approved">Approved</option>
+            </select></br>
+            <span class="text">Sort By:</span>
+            <select name="sortBy" required>
+                <option value="username">Username</option>
+                <option value="creditCardCount">Credit Card Count</option>
+                <option value="userType">User Type</option>
+                <option value="status">Status</option>
+            </select>
+            <span class="text">Sort Direction:</span>
+            <select name="sortDir" required>
+                <option value="DESC">Descending</option>
+                <option value="ASC">Ascending</option>
+            </select>
+            <button type="submit">Filter</button> </br>
+        </form>
+        <div id="output"></div>
+        <form action="/affect_user" method="POST">
+            <button type="button" onclick="window.location.href='funcNav'">Back</button>
+            <span class="text">Username to affect:</span>
+            <input name="username">
+            <button type="submit" name="accept" value="true">Accept</button>
+            <button type="submit" name="decline" value="true">Decline</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+  function generateTable(table, data) {
+	for (let element of data) {
+	  let row = table.insertRow();
+	  for (key in element) {
+		let cell = row.insertCell();
+		let text = document.createTextNode(element[key]);
+		cell.appendChild(text);
+	  }
+	}
+  }
+
+  var parameters = decodeURIComponent(location.search.substring(1));
+
+  if (parameters.length>0 && parameters.charAt(0) != 'u') {
+	var results = JSON.parse(parameters);
+	document.getElementById("output").innerHTML = "<table style=\"width:100%\">\n" +
+	  "  <tr>\n" +
+	  "    <th>Username</th>\n" +
+	  "    <th>Credit Card Count</th> \n" +
+	  "    <th>User Type</th>\n" +
+	  "    <th>Status</th>\n" +
+	  "  </tr>\n";
+	document.getElementById("output").innerHTML += "</table>";
+	let table = document.querySelector("table");
+	generateTable(table, results);
+  }
+</script>

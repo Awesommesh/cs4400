@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manage Company</title>
+
+    <link rel="icon" type="image/jpg" href="../../static/imgs/favicon.jpg"/>
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css">
+</head>
+
+<body>
+<div class="outer">
+    <div class="inner">
+        <span class="title">Manage Company</span>
+        <div class="space-large"></div>
+        <form action="/manage_company" method="POST">
+            <span class="text">Name:</span>
+            <div class="dropdown" id="dropdown1"></div>
+            <span class="text"># City Covered:</span>
+            <input name="min_city">
+            <span class="text">--</span>
+            <input name="max_city"></br>
+            <span class="text"># Theaters:</span>
+            <input name="min_theater">
+            <span class="text">--</span>
+            <input name="max_theater">
+            <span class="text"># Employees:</span>
+            <input name="min_employee">
+            <span class="text">--</span>
+            <input name="max_employee"></br>
+            <span class="text">Sort By:</span>
+            <select name="sortBy" required>
+                <option value="comName">Name</option>
+                <option value="numCityCover"># City Covered</option>
+                <option value="numTheater"># Theaters</option>
+                <option value="numEmployee"># Employees</option>
+            </select>
+            <span class="text">Sort Direction:</span>
+            <select name="sortDir" required>
+                <option value="DESC">Descending</option>
+                <option value="ASC">Ascending</option>
+            </select>
+            <button type="submit">Filter</button> </br>
+        </form>
+        <div id="output"></div>
+        <form action="/detail_company" method="POST">
+            <button type="button" onclick="window.location.href='funcNav'">Back</button>
+            <span class="text">Name of company to detail:</span>
+            <input name="comName" required>
+            <button type="submit">Detail</button>
+            <button type="button" onclick="window.location.href='create_theater.html'">Create Theater</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+<script>
+  function generateTable(table, data) {
+	for (let element of data) {
+	  let row = table.insertRow();
+	  for (key in element) {
+		let cell = row.insertCell();
+		let text = document.createTextNode(element[key]);
+		cell.appendChild(text);
+	  }
+	}
+  }
+
+  var selector1 = document.getElementById("dropdown1");
+  fetch('http://localhost:3000/companyList/')
+	.then((res) => {
+	  if (res.ok) {
+		return res.json();
+	  }
+	})
+	.then((rows) => {
+	  for (var i = 0; i < rows.length; i++) {
+		selector1.innerHTML+="<option value='"+i+"' required>"+rows[i].comName+"</option>";
+	  }
+	  selector1.innerHTML = "<select name=\"comName\">" + "<option value='ALL'>ALL</option>" + selector1.innerHTML + "</select>";
+	})
+	.catch(console.log);
+
+  var parameters = decodeURIComponent(location.search.substring(1));
+
+  if (parameters.length>0 && parameters.charAt(0) != 'u') {
+    var results = JSON.parse(parameters);
+    document.getElementById("output").innerHTML = "<table style=\"width:100%\">\n" +
+	  "  <tr>\n" +
+	  "    <th>Name</th>\n" +
+	  "    <th># City Covered</th> \n" +
+	  "    <th># Theaters</th>\n" +
+	  "    <th># Employee</th>\n" +
+	  "  </tr>\n";
+    document.getElementById("output").innerHTML += "</table>";
+    let table = document.querySelector("table");
+    generateTable(table, results);
+  }
+</script>
