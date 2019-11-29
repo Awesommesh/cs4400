@@ -169,6 +169,7 @@ app.post('/login', (req, res) => {
         res.redirect('functionality/user.html');
       }
     } else {
+      console.log(results);
       res.redirect('/');
     }
   });
