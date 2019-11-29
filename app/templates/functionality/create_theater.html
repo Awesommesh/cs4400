@@ -106,6 +106,27 @@
 	})
 	.catch(console.log);
 
+  function resetMangerList() {
+    var comSelector = document.getElementById("com");
+    console.log(comSelector.value);
+    fetch('http://localhost:3000/managerList/'+comSelector.value)
+	  .then((res) => {
+	    if (res.ok) {
+		  return res.json();
+	    }
+	  })
+	  .then((rows) => {
+	    console.log(rows);
+        selector2 = document.getElementById("dropdown2");
+        selector2.innerHTML = "";
+	    for (var i = 0; i < rows.length; i++) {
+		  selector2.innerHTML+="<option value='"+i+"' required>"+rows[i].firstname+" "+rows[i].lastname+"</option>";
+	    }
+	    selector2.innerHTML = "<select name=\"manIndex\">" + selector2.innerHTML + "</select>";
+	  })
+	  .catch(console.log);
+  }
+
   var selector1 = document.getElementById("dropdown1");
   fetch('http://localhost:3000/companyList/')
 	.then((res) => {
@@ -117,7 +138,7 @@
 	  for (var i = 0; i < rows.length; i++) {
 		selector1.innerHTML+="<option value='"+i+"' required>"+rows[i].comName+"</option>";
 	  }
-	  selector1.innerHTML = "<select name=\"comName\">" + selector1.innerHTML + "</select>";
+	  selector1.innerHTML = "<select id=\"com\" name=\"comName\" onchange=\"resetMangerList()\">" + selector1.innerHTML + "</select>";
 	})
 	.catch(console.log);
 </script>

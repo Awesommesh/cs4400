@@ -34,7 +34,6 @@
   }
 
   var parameters = decodeURIComponent(location.search.substring(1));
-  console.log(parameters);
   if (parameters.length>0 && parameters.charAt(0) != 'u') {
 	var results = JSON.parse(parameters);
 	var pageOut = document.getElementById("output");

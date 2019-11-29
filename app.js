@@ -143,6 +143,13 @@ app.get('/', (req, res) => {
   readFile(filePath, res, contentType);
 });
 
+app.get('/index.html', (req, res)=> {
+  const { username } = req.session;
+  let filePath = 'app/templates/index.html';
+  let contentType = fileType(filePath);
+  readFile(filePath, res, contentType);
+});
+
 app.post('/login', (req, res) => {
   let create = `CALL user_login(?, ?)`;
   let { username, password } = req.body;
@@ -169,8 +176,14 @@ app.post('/login', (req, res) => {
         res.redirect('functionality/user.html');
       }
     } else {
-      console.log(results);
-      res.redirect('/');
+      var msg = [{err: ""}];
+      if (results.length > 0 && results[0].status != 'Approved') {
+        msg[0].err = "Attempted login's user status not approved!";
+        res.redirect('/index.html?'+JSON.stringify(msg));
+      } else {
+        msg[0].err = "Incorrect Username or Password!";
+        res.redirect('/index.html?'+JSON.stringify(msg));
+      }
     }
   });
 });
@@ -212,7 +225,11 @@ app.post('/theater_overview', (req, res) => {
   }
   let sql = 'CALL manager_filter_th(?, ?, ?, ?, ?, ?, ?, ?)';
   db.query(sql, [movie_name, min_duration, max_duration, min_release_date, max_release_date,
-    min_play_date, max_play_date, not_played_movie_only], (error, results) => {});
+    min_play_date, max_play_date, not_played_movie_only], (error, results) => {
+    if (results == undefined) {
+      console.log("Invalid input to filter movies in theater!");
+    }
+  });
   let sqlResults = 'SELECT * FROM ManFilterTh';
   db.query(sqlResults, (error, results) => {
     res.redirect('/functionality/theater_overview.html?'+JSON.stringify(results));  //Terrible Terrible way of doing things but what can you do XD
@@ -237,7 +254,11 @@ app.post("/explore_movie", (req, res) => {
     db.query(sqlGetCompanyName, (error, results) => {
       com_name = results[comName].comName;
       let sql = 'CALL customer_filter_mov(?, ?, ?, ?, ?, ?)';
-      db.query(sql, [mov_name, com_name, city, state, min_play_date, max_play_date], (error, results) => {});
+      db.query(sql, [mov_name, com_name, city, state, min_play_date, max_play_date], (error, results) => {
+        if (results == undefined) {
+          console.log("Invalid input to filter movie!");
+        }
+      });
       let sqlResults = 'SELECT * FROM CosFilterMovie';
       db.query(sqlResults, (error, results) => {
         res.redirect('/functionality/explore_movie.html?' + JSON.stringify(results));
@@ -251,7 +272,11 @@ app.post("/explore_movie", (req, res) => {
       db.query(sqlGetCompanyName, (error, results) => {
         com_name = results[comName].comName;
         let sql = 'CALL customer_filter_mov(?, ?, ?, ?, ?, ?)';
-        db.query(sql, [mov_name, com_name, city, state, min_play_date, max_play_date], (error, results) => {});
+        db.query(sql, [mov_name, com_name, city, state, min_play_date, max_play_date], (error, results) => {
+          if (results == undefined) {
+            console.log("Invalid input to filter movie!");
+          }
+        });
         let sqlResults = 'SELECT * FROM CosFilterMovie';
         db.query(sqlResults, (error, results) => {
           res.redirect('/functionality/explore_movie.html?' + JSON.stringify(results));
@@ -270,7 +295,11 @@ app.post('/explore_theater', (req,  res)=> {
     db.query(sqlGetCompanyName, (error, results) => {
       com_name = results[comName].comName;
       let sql = 'CALL user_filter_th(?, ?, ?, ?)';
-      db.query(sql, [th_name, com_name, city, state], (error, results) => {});
+      db.query(sql, [th_name, com_name, city, state], (error, results) => {
+        if (results == undefined) {
+          console.log("Invalid input to filter theater!");
+        }
+      });
       let sqlResults = 'SELECT * FROM UserFilterTh';
       db.query(sqlResults, (error, results) => {
         res.redirect('/functionality/explore_theater.html?' + JSON.stringify(results));
@@ -284,7 +313,11 @@ app.post('/explore_theater', (req,  res)=> {
       db.query(sqlGetCompanyName, (error, results) => {
         com_name = results[comName].comName;
         let sql = 'CALL user_filter_th(?, ?, ?, ?)';
-        db.query(sql, [th_name, com_name, city, state], (error, results) => {});
+        db.query(sql, [th_name, com_name, city, state], (error, results) => {
+          if (results == undefined) {
+            console.log("Invalid input to filter theater!");
+          }
+        });
         let sqlResults = 'SELECT * FROM UserFilterTh';
         db.query(sqlResults, (error, results) => {
           res.redirect('/functionality/explore_theater.html?' + JSON.stringify(results));
@@ -310,7 +343,11 @@ app.post('/visit_history', (req, res)=> {
   db.query(sqlGetCompanyName, (error, results) => {
     com_name = results[comName].comName;
     const sql = 'CALL user_filter_visitHistory(?, ?, ?)';
-    db.query(sql, [req.session.username, min_visit_date, max_visit_date], (error, req) =>{});
+    db.query(sql, [req.session.username, min_visit_date, max_visit_date], (error, req) =>{
+      if (results == undefined) {
+        console.log("Invalid input to filter visit history!");
+      }
+    });
     const sqlResults = "SELECT * FROM UserVisitHistory WHERE comName=\""+com_name+"\"";
     db.query(sqlResults, (error, results)=> {
       res.redirect('/functionality/visit_history.html?' + JSON.stringify(results));
@@ -331,14 +368,6 @@ app.post('/manage_user', (req, res) => {
 app.post('/manage_company', (req, res) => {
   var {comName, min_city, max_city, min_theater, max_theater, min_employee, max_employee, sortBy, sortDir} = req.body;
   var com_name;
-  if (comName == "ALL") {
-    com_name = comName
-  } else {
-    let sqlGetCompanyName = 'SELECT comName FROM company';
-    db.query(sqlGetCompanyName, (error, results) => {
-      com_name = results[comName].comName;
-    });
-  }
   if (min_city == '') {
     min_city = 0;
   }
@@ -357,12 +386,31 @@ app.post('/manage_company', (req, res) => {
   if (max_employee == '') {
     max_employee = ""+100000000;
   }
-  let sql = 'CALL admin_filter_company(?, ?, ?, ?, ?, ?, ?, ?, ?)';
-  db.query(sql, [com_name, min_city, max_city, min_theater, max_theater, min_employee, max_employee, sortBy, sortDir], (error, results) => {});
-  let sqlResults = 'SELECT * FROM AdFilterCom';
-  db.query(sqlResults, (error, results) => {
-    res.redirect('/functionality/manage_company.html?' + JSON.stringify(results));
-  });
+  if (comName == "ALL") {
+    com_name = comName;
+    let sql = 'CALL admin_filter_company(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    db.query(sql, [com_name, min_city, max_city, min_theater, max_theater, min_employee, max_employee, sortBy, sortDir], (error, results) => {
+      if (results == undefined) {
+        console.log("Invalid input to filter company!");
+      }
+    });
+    let sqlResults = 'SELECT * FROM AdFilterCom';
+    db.query(sqlResults, (error, results) => {
+      res.redirect('/functionality/manage_company.html?' + JSON.stringify(results));
+    });
+  } else {
+    let sqlGetCompanyName = 'SELECT comName FROM company';
+    db.query(sqlGetCompanyName, (error, results) => {
+      com_name = results[comName].comName;
+      let sql = 'CALL admin_filter_company(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+      db.query(sql, [com_name, min_city, max_city, min_theater, max_theater, min_employee, max_employee, sortBy, sortDir], (error, results) => {
+      });
+      let sqlResults = 'SELECT * FROM AdFilterCom';
+      db.query(sqlResults, (error, results) => {
+        res.redirect('/functionality/manage_company.html?' + JSON.stringify(results));
+      });
+    });
+  }
 });
 
 app.get('/movieList/', (req, res)=> {
@@ -387,9 +435,21 @@ app.get('/theaterList/', (req, res)=> {
 });
 
 app.get('/managerList/', (req, res)=> {
-  let sql = 'SELECT User.firstname, User.lastname FROM user  WHERE username IN (SELECT username FROM manager) AND username NOT IN (SELECT manUsername FROM theater)';
+  let sql = 'SELECT User.firstname, User.lastname FROM user WHERE username IN (SELECT username FROM manager WHERE comName = "4400 Theater Company") AND username NOT IN (SELECT manUsername FROM theater)';
   db.query(sql, (error, results)=> {
     res.json(results);
+  });
+});
+
+app.get('/managerList/:resetInd', (req, res)=> {
+  var com_name;
+  let sqlGetCompanyName = 'SELECT comName FROM company';
+  db.query(sqlGetCompanyName, (error, results) => {
+    com_name = results[req.params.resetInd].comName;
+    let sql = 'SELECT User.firstname, User.lastname FROM user WHERE username IN (SELECT username FROM manager WHERE comName = "'+com_name+'") AND username NOT IN (SELECT manUsername FROM theater)';
+    db.query(sql, (error, results)=> {
+      res.json(results);
+    });
   });
 });
 
@@ -417,6 +477,9 @@ app.post('/schedule_movie', (req, res) => {
     mov_name = results[movName].movName;
     let sql = 'CALL manager_schedule_mov(?, ?, ?, ?)';
     db.query(sql, [req.session.username, mov_name, mov_release_date, mov_play_date], (error, results) => {
+      if (results == undefined) {
+        console.log("Invalid input to schedule movie!");
+      }
       res.redirect('/functionality/schedule_movie.html');
     });
   });
@@ -432,13 +495,15 @@ app.post('/view_movie', (req, res) => {
 
   let sqlGetRowData = 'SELECT * FROM CosFilterMovie';
   db.query(sqlGetRowData, (error, results) => {
-    if (row < results.length) {
+    if (row < results.length && row >= 0) {
       var row_data = results[row];
       let sql = 'CALL customer_view_mov(?, ?, ?, ?, ?, ?)';
       db.query(sql, [view_creditCard, row_data.movName, row_data.movReleaseDate, row_data.thName,
         row_data.comName, row_data.movPlayDate], (error, results)=> {
         res.redirect("/functionality/explore_movie.html");
       });
+    } else {
+      console.log("Invalid row selected!");
     }
   });
 });
@@ -448,12 +513,17 @@ app.post('/visit_theater', (req, res) => {
 
   let sqlGetRowData = 'SELECT * FROM UserFilterTh';
   db.query(sqlGetRowData, (error, results) => {
-    if (row < results.length) {
+    if (row < results.length && row >= 0) {
       var row_data = results[row];
       let sql = 'CALL user_visit_th(?, ?, ?, ?)';
       db.query(sql, [row_data.thName, row_data.comName, visitDate, req.session.username], (error, results)=> {
+        if (results == undefined) {
+          console.log("Invalid input to log visit!");
+        }
         res.redirect("/functionality/explore_theater.html");
       });
+    } else {
+      console.log("Invalid row selected!")
     }
   });
 });
@@ -501,6 +571,9 @@ app.post('/create_theater', (req, res)=> {
       manUsername = results[manIndex].username;
       let sql = "CALL admin_create_theater(?, ?, ?, ?, ?, ?, ?, ?)";
       db.query(sql, [name, com_name, address, city, state, zipcode, capacity, manUsername], (error, results)  => {
+        if (results == undefined) {
+          console.log("Invalid input to create theater!");
+        }
         res.redirect('/functionality/create_theater.html');
       });
     });
@@ -511,6 +584,9 @@ app.post('/create_movie', (req, res) => {
   const {name, duration, release_date}=req.body;
   let sql = 'CALL admin_create_mov(?, ?, ?)';
   db.query(sql, [name, duration, release_date], (error, results) => {
+    if (results == undefined) {
+      console.log("Invalid input to create movie!");
+    }
     res.redirect('/functionality/create_movie.html');
   });
 });
