@@ -15,17 +15,12 @@
         <div class="space-large"></div>
 
         <form action="/login" method="POST">
-          <div class="login">
-            <span class="text">Username:</span>
-            <input name="username" required>
-            </br>
-            <span class="text">Password:</span>
-            <input type="password" name="password" required>
-          </div>
-          <div class="space-large"></div>
+          <input name="username" placeholder="Username" required></br>
+          <input name="password" placeholder="Password" type="password" required></br>
+          <div class="space-medium"></div>
 
-          <button type="submit">Login</button>
-          <button type="button" onclick="window.location.href='registration/navigation.html'">Register</button>
+          <button class="minimum" type="submit">Login</button>
+          <button class="minimum" type="button" onclick="window.location.href='registration/navigation.html'">Register</button>
         </form>
       </div>
     </div>

@@ -12,14 +12,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
  * on port 3000, and the user/password attributes below should be changed to match your
  * local information, as the program's execution will fail otherwise.
  */
- app.listen('3000', () => {
-   console.log('[PORT:3000] Atlanta Movie Project 🎉\n');
- });
+app.listen('3000', () => {
+  console.log('Atlanta Movie Project 🎉');
+});
 
 const db = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: 'Password',
+  password: 'password',
   database: 'team73'
 });
 
@@ -41,10 +41,7 @@ const pages = ['/functionality/admin-customer.html',   '/functionality/admin.htm
                '/functionality/manager.html',          '/functionality/user.html',
                '/registration/manager-customer.html',  '/registration/customer.html',
                '/registration/user.html',              '/registration/manager.html',
-               '/registration/navigation.html',        '/functionality/theater_overview.html',
-               '/functionality/explore_movie.html',    '/functionality/explore_theater.html',
-               '/functionality/schedule_movie.html',   '/functionality/view_history.html',
-               '/functionality/visit_history.html'];
+               '/registration/navigation.html'];
 
 for (let i = 0; i < pages.length; i++) {
   app.get(pages[i], (req, res) => {
@@ -105,8 +102,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  let create = `CALL user_login(?, ?)`;
   let { username, password } = req.body;
+  let create = `CALL user_login(?, ?)`;
   db.query(create, [username, password], (error, results) => {});
 
   let access = `SELECT * FROM UserLogin`;
@@ -127,71 +124,27 @@ app.post('/login', (req, res) => {
   });
 });
 
-app.post('/theater_overview', (req, res) => {
-  var {movie_name, min_duration, max_duration, min_release_date, max_release_date, min_play_date,
-    max_play_date, not_played_movie_only} = req.body;
-  if(min_duration=='') {
-    min_duration = 0;
-  }
-  if(max_duration=='') {
-    const maxDuration = 'SELECT MAX(duration) FROM movie';
-    db.query(maxDuration, (error, results) => {
-      max_duration = results[0];
-    });
-  }
-  if(min_release_date==''){
-    min_release_date='1000-01-01';
-  }
-  if(max_release_date=='') {
-    const maxReleaseDate = 'SELECT MAX(movReleaseDate) FROM movie';
-    db.query(maxReleaseDate, (error, results) => {
-      max_release_date = results[0];
-    });
-  }
-  if(min_play_date=='') {
-    min_play_date='1000-01-01';
-  }
-  if(max_play_date=='') {
-    const maxPlayDate = 'SELECT MAX(movPlayDate) FROM movieplay';
-    db.query(maxPlayDate, (error, results) => {
-      max_play_date = results[0];
-    });
-  }
-  if(!not_played_movie_only) {
-    not_played_movie_only = false;
-  } else {
-    not_played_movie_only = true;
-  }
-  let sql = 'CALL manager_filter_th(?, ?, ?, ?, ?, ?, ?, ?)';
-  db.query(sql, [movie_name, min_duration, max_duration, min_release_date, max_release_date,
-    min_play_date, max_play_date, not_played_movie_only], (error, results) => {});
-  let sqlResults = 'SELECT * FROM ManFilterTh';
-  db.query(sqlResults, (error, results) => {
-    res.redirect('/functionality/theater_overview.html?'+JSON.stringify(results));  //Terrible Terrible way of doing things but what can you do XD
-  });
-});
-
- /*
-  * ===========================
-  *  SCREENS 3-6: REGISTRATION
-  * ===========================
-  *   1. “Usernames” are unique among all users.
-  *   2. “Password” must have at least 8 characters.
-  *   3. “Password” and “confirm password” should match
-  *   4. Store the hashed password in the database, not the plain text one.
-  */
+/*
+ * ===========================
+ *  SCREENS 3-6: REGISTRATION
+ * ===========================
+ *   1. “Usernames” are unique among all users.
+ *   2. “Password” must have at least 8 characters.
+ *   3. “Password” and “confirm password” should match
+ *   4. Store the hashed password in the database, not the plain text one.
+ */
 app.post('/register_user', (req, res) => {
-  // to-do!
-});
+  let { fname, lname, username, password, confirm } = req.body;
+  let sql = 'CALL user_register(?, ?, ?, ?)';
 
-app.post('/register_manager', (req, res) => {
-  // to-do!
-});
-
-app.post('/register_customer', (req, res) => {
-  // to-do!
-});
-
-app.post('/register_manager_customer', (req, res) => {
-  // to-do!
+  if (password === confirm) {
+    db.query(sql, [username, password, fname, lname], (error, results) => {
+      if (results.affectedRows > 0)
+        res.redirect('functionality/user.html');
+      else
+        res.redirect('registration/user.html');
+    });
+  } else {
+    res.redirect('registration/user.html');
+  }
 });

@@ -11,7 +11,20 @@
   <body>
     <div class="outer">
       <div class="inner">
-        <span class="title">User Registration</span>
+        <div class="title">User Registration</div>
+        <div class="space-large"></div>
+
+        <form action="/register_user" method="POST">
+          <input name="fname" placeholder="First Name" required></br>
+          <input name="lname" placeholder="Last Name" required></br>
+          <input name="username" placeholder="Username" required></br>
+          <input name="password" placeholder="Password" type="password" required></br>
+          <input name="confirm" placeholder="Confirm Password" type="password" required></br>
+          <div class="space-large"></div>
+
+          <button class="minimum" type="submit">Register</button>
+          <button class="minimum" type="button" onclick="window.location.href='./navigation.html'">Back</button>
+        </form>
       </div>
     </div>
   </body>

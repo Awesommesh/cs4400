@@ -9,6 +9,7 @@ input, button {
   margin: 5px;
   font-size: 18px;
   padding: 3px 5px;
+  min-width: 200px;
   font-family: 'Dosis';
 
   border-width: 2px;
@@ -80,6 +81,6 @@ button:active {
   height: 25px;
 }
 
-table, th, td {
-  border: 1px solid black;
+.minimum {
+  min-width: 0px;
 }

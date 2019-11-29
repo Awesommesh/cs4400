@@ -2,15 +2,17 @@ DROP PROCEDURE IF EXISTS user_login;
 DELIMITER $$
 CREATE PROCEDURE `user_login`(IN i_username VARCHAR(50), IN i_password VARCHAR(50))
 BEGIN
-	DROP TABLE IF EXISTS UserLogin;
+  DROP TABLE IF EXISTS UserLogin;
     CREATE TABLE UserLogin
     SELECT User.username, User.status, C.isCustomer, A.isAdmin, M.isManager
     FROM User, (SELECT COUNT(*) AS isCustomer FROM Customer WHERE username = i_username) AS C,
     (SELECT COUNT(*) AS isAdmin FROM admin WHERE username = i_username) AS A,
     (SELECT COUNT(*) AS isManager FROM Manager WHERE username = i_username) AS M
-	WHERE (username = i_username) AND (password = MD5(i_password));
+  WHERE (username = i_username) AND (password = MD5(i_password));
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS user_register;
 DELIMITER $$
@@ -21,10 +23,11 @@ CREATE PROCEDURE `user_register`(
     IN i_lastname VARCHAR(50)
 )
 BEGIN
-		INSERT IGNORE INTO user (username, password, firstname, lastname)
+    INSERT IGNORE INTO user (username, password, firstname, lastname)
             VALUES (i_username, MD5(i_password), i_firstname, i_lastname);
 END$$
 DELIMITER ;
+
 
 
 DROP PROCEDURE IF EXISTS customer_only_register;
@@ -36,13 +39,14 @@ CREATE PROCEDURE `customer_only_register`(
     IN i_lastname VARCHAR(50)
 )
 BEGIN
-	INSERT IGNORE INTO user (username, password, firstname, lastname)
+  INSERT IGNORE INTO user (username, password, firstname, lastname)
         VALUES (i_username, MD5(i_password), i_firstname, i_lastname);
-	INSERT IGNORE INTO customer (username)
+  INSERT IGNORE INTO customer (username)
         VALUES (i_username);
 
 END$$
 DELIMITER ;
+
 
 
 DROP PROCEDURE IF EXISTS customer_add_creditcard;
@@ -52,11 +56,15 @@ CREATE PROCEDURE `customer_add_creditcard`(
     IN i_creditCardNum CHAR(16)
 )
 BEGIN
-	INSERT INTO CustomerCreditCard (username, creditCardNum)
+  IF 5 > (SELECT COUNT(*)
+        FROM customercreditcard
+        WHERE username = i_username
+    ) THEN
+  INSERT IGNORE INTO CustomerCreditCard (username, creditCardNum)
         VALUES(i_username, i_creditCardNum);
+    END IF;
 END$$
 DELIMITER ;
-
 
 
 
@@ -74,11 +82,11 @@ CREATE PROCEDURE `manager_only_register`(
     IN i_empZipcode CHAR(5)
 )
 BEGIN
-	INSERT IGNORE INTO user (username, password, firstname, lastname)
+  INSERT IGNORE INTO user (username, password, firstname, lastname)
         VALUES (i_username, MD5(i_password), i_firstname, i_lastname);
-	INSERT IGNORE INTO employee (username)
+  INSERT IGNORE INTO employee (username)
         VALUES (i_username);
-	INSERT IGNORE INTO manager (username, comName, manStreet, manCity, manState, manZipcode)
+  INSERT IGNORE INTO manager (username, comName, manStreet, manCity, manState, manZipcode)
         VALUES (i_username, i_comName, i_empStreet, i_empCity, i_empState, i_empZipcode);
 END$$
 DELIMITER ;
@@ -99,16 +107,18 @@ CREATE PROCEDURE `manager_customer_register`(
     IN i_empZipcode CHAR(5)
 )
 BEGIN
-	INSERT INTO user (username, password, firstname, lastname)
+  INSERT IGNORE INTO user (username, password, firstname, lastname)
         VALUES (i_username, MD5(i_password), i_firstname, i_lastname);
-	INSERT INTO employee (username)
+  INSERT IGNORE INTO employee (username)
         VALUES (i_username);
-	INSERT INTO customer (username)
+  INSERT IGNORE INTO customer (username)
         VALUES (i_username);
-	INSERT INTO manager (username, comName, manStreet, manCity, manState, manZipcode)
+  INSERT IGNORE INTO manager (username, comName, manStreet, manCity, manState, manZipcode)
         VALUES (i_username, i_comName, i_empStreet, i_empCity, i_empState, i_empZipcode);
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS manager_customer_add_creditcard;
 DELIMITER $$
@@ -117,13 +127,10 @@ CREATE PROCEDURE `manager_customer_add_creditcard`(
     IN i_creditCardNum CHAR(16)
 )
 BEGIN
-	INSERT INTO CustomerCreditCard (username, creditCardNum)
+  INSERT IGNORE INTO CustomerCreditCard (username, creditCardNum)
         VALUES(i_username, i_creditCardNum);
 END$$
 DELIMITER ;
-
-
-
 
 
 
@@ -131,20 +138,23 @@ DROP PROCEDURE IF EXISTS admin_approve_user;
 DELIMITER $$
 CREATE PROCEDURE `admin_approve_user`(IN i_username VARCHAR(50))
 BEGIN
-	UPDATE user
-	SET status = 'Approved'
-	WHERE username = i_username;
+    UPDATE user
+    SET status = 'Approved'
+    WHERE username = i_username
+        AND (status = 'Pending' OR status = 'Declined');
 END$$
 DELIMITER ;
+
 
 
 DROP PROCEDURE IF EXISTS admin_decline_user;
 DELIMITER $$
 CREATE PROCEDURE `admin_decline_user`(IN i_username VARCHAR(50))
 BEGIN
-	UPDATE user
-	SET status = 'Declined'
-	WHERE username = i_username;
+  UPDATE user
+  SET status = 'Declined'
+  WHERE username = i_username
+        AND status = 'Pending';
 END$$
 DELIMITER ;
 
@@ -159,7 +169,7 @@ CREATE PROCEDURE `admin_filter_user`(
     IN i_sortDirection VARCHAR(50)
 )
 BEGIN
-	DROP TABLE IF EXISTS AdFilterUser;
+  DROP TABLE IF EXISTS AdFilterUser;
     CREATE TABLE AdFilterUser
     WITH ccCount AS (
         SELECT username,
@@ -176,31 +186,31 @@ BEGIN
             WHEN u.username IN (SELECT username FROM admin) THEN "Admin"
             WHEN u.username IN (SELECT username FROM Manager) THEN "Manager"
             ELSE "User"
-    	END AS userType,
+      END AS userType,
         u.status
     FROM user u
     LEFT JOIN ccCount cc
         ON cc.username = u.username
-    WHERE (i_username="" OR u.username = i_username)
-        AND (i_status="ALL" OR u.status = i_status)
+    WHERE (i_username='' OR i_username = u.username)
+        AND (i_status="ALL" OR i_status='' OR i_status = u.status)
     ORDER BY
     (CASE
-		WHEN i_sortBy="username" AND i_sortDirection="ASC" THEN u.username
+    WHEN i_sortBy="username" AND i_sortDirection="ASC" THEN u.username
         WHEN i_sortBy="creditCardCount" AND i_sortDirection="ASC" THEN creditCardCount
         WHEN i_sortBy="userType" AND i_sortDirection="ASC" THEN userType
         WHEN i_sortBy="status" AND i_sortDirection="ASC" THEN status
     END) ASC,
     (CASE
-		WHEN i_sortBy="username" THEN u.username
+    WHEN i_sortBy="username" THEN u.username
         WHEN i_sortBy="creditCardCount" THEN creditCardCount
         WHEN i_sortBy="userType" THEN userType
         WHEN i_sortBy="status" THEN status
-    END) DESC,
-    (CASE
-		WHEN i_sortDirection != "ASC" AND i_sortDirection != "DESC" THEN u.username
+        ELSE u.username
     END) DESC;
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS admin_filter_company;
 DELIMITER $$
@@ -216,7 +226,7 @@ CREATE PROCEDURE `admin_filter_company`(
     IN i_sortDirection VARCHAR(50)
 )
 BEGIN
-	DROP TABLE IF EXISTS AdFilterCom;
+  DROP TABLE IF EXISTS AdFilterCom;
     CREATE TABLE AdFilterCom
     WITH cc AS (
         SELECT comName,
@@ -245,8 +255,8 @@ BEGIN
         ON tc.comName = c.comName
     LEFT JOIN ec
         ON ec.comName = c.comName
-    WHERE (i_comName = "ALL" OR c.comName = i_comName)
-	    AND (i_minCity IS NULL OR COALESCE(cc.numCityCover, 0) >= i_minCity)
+    WHERE (i_comName = "ALL" OR i_comName = "" OR c.comName = i_comName)
+      AND (i_minCity IS NULL OR COALESCE(cc.numCityCover, 0) >= i_minCity)
         AND (i_maxCity IS NULL OR COALESCE(cc.numCityCover, 0) <= i_maxCity)
         AND (i_minTheater IS NULL OR COALESCE(tc.numTheater, 0) >= i_minTheater)
         AND (i_maxTheater IS NULL OR COALESCE(tc.numTheater, 0) <= i_maxTheater)
@@ -254,23 +264,22 @@ BEGIN
         AND (i_maxEmployee IS NULL OR COALESCE(ec.numEmployee, 0) <= i_maxEmployee)
     ORDER BY
     (CASE
-		WHEN i_sortBy="comName" AND i_sortDirection="ASC" THEN c.comName
+    WHEN i_sortBy="comName" AND i_sortDirection="ASC" THEN c.comName
         WHEN i_sortBy="numCityCover" AND i_sortDirection="ASC" THEN numCityCover
         WHEN i_sortBy="numTheater" AND i_sortDirection="ASC" THEN numTheater
         WHEN i_sortBy="numEmployee" AND i_sortDirection="ASC" THEN numEmployee
     END) ASC,
     (CASE
-		WHEN i_sortBy="comName" AND i_sortDirection != "ASC" THEN c.comName
+    WHEN i_sortBy="comName" AND i_sortDirection != "ASC" THEN c.comName
         WHEN i_sortBy="numCityCover" AND i_sortDirection != "ASC" THEN numCityCover
         WHEN i_sortBy="numTheater" AND i_sortDirection != "ASC" THEN numTheater
         WHEN i_sortBy="numEmployee" AND i_sortDirection != "ASC" THEN numEmployee
     END) DESC,
     (CASE
-		WHEN i_sortDirection != "ASC" AND i_sortDirection != "DESC" THEN c.comName
+    WHEN i_sortDirection != "ASC" AND i_sortDirection != "DESC" THEN c.comName
     END) DESC;
 END$$
 DELIMITER ;
-
 
 
 
@@ -282,14 +291,18 @@ CREATE PROCEDURE `admin_create_theater`(
     IN i_thStreet VARCHAR(50),
     IN i_thCity VARCHAR(50),
     IN i_thState CHAR(2),
-    IN thZipcode CHAR(5),
+    IN i_thZipcode CHAR(5),
     IN i_capacity INT(11),
     IN i_managerUsername VARCHAR(50)
 )
 BEGIN
-	INSERT IGNORE INTO theater (thName, comName, thStreet, thCity, thState, thZipcode, capacity, manUsername)
-        VALUES (i_thName, i_comName, i_thStreet, i_thCity, i_thState, thZipcode, i_capacity, i_managerUsername);
-
+    IF CONCAT(i_managerUsername, i_comName) IN (
+        SELECT CONCAT(username, comName)
+        FROM manager
+    ) THEN
+      INSERT IGNORE INTO theater (thName, comName, thStreet, thCity, thState, thZipcode, capacity, manUsername)
+            VALUES (i_thName, i_comName, i_thStreet, i_thCity, i_thState, i_thZipcode, i_capacity, i_managerUsername);
+    END IF;
 END$$
 DELIMITER ;
 
@@ -313,6 +326,7 @@ END$$
 DELIMITER ;
 
 
+
 DROP PROCEDURE IF EXISTS admin_view_comDetail_th;
 DELIMITER $$
 CREATE PROCEDURE `admin_view_comDetail_th` (
@@ -331,6 +345,8 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+
 DROP PROCEDURE IF EXISTS admin_create_mov;
 DELIMITER $$
 CREATE PROCEDURE `admin_create_mov`(
@@ -339,10 +355,11 @@ CREATE PROCEDURE `admin_create_mov`(
     IN i_movReleaseDate DATE
 )
 BEGIN
-	INSERT IGNORE INTO movie (movName, duration, movReleaseDate)
+  INSERT IGNORE INTO movie (movName, duration, movReleaseDate)
         VALUES (i_movName, i_movDuration, i_movReleaseDate);
 END$$
 DELIMITER ;
+
 
 
 DROP PROCEDURE IF EXISTS manager_filter_th;
@@ -431,6 +448,7 @@ END$$
 DELIMITER ;
 
 
+
 DROP PROCEDURE IF EXISTS manager_schedule_mov;
 DELIMITER $$
 CREATE PROCEDURE `manager_schedule_mov`(
@@ -440,10 +458,11 @@ CREATE PROCEDURE `manager_schedule_mov`(
     IN i_movPlayDate DATE
 )
 BEGIN
-	INSERT IGNORE INTO MoviePlay (movName, movReleaseDate, movPlayDate, thName, comName)
+  INSERT IGNORE INTO MoviePlay (movName, movReleaseDate, movPlayDate, thName, comName)
         VALUES(i_movName, i_movReleaseDate, i_movPlayDate, (SELECT thName FROM theater WHERE manUsername=i_manUsername), (SELECT comName FROM theater WHERE manUsername=i_manUsername));
 END$$
 DELIMITER ;
+
 
 
 DROP PROCEDURE IF EXISTS customer_filter_mov;
@@ -472,14 +491,16 @@ BEGIN
     INNER JOIN theater t
         ON t.thName = mp.thName
         AND t.comName = mp.comName
-    WHERE (i_movName = 'ALL' OR mp.movName = i_movName)
-        AND (i_comName = 'ALL' OR t.comName = i_comName)
-        AND (i_city = '' OR t.thCity = i_city)
+    WHERE (i_movName = 'ALL' OR i_movName = '' OR mp.movName = i_movName)
+        AND (i_comName = 'ALL' OR i_comName = '' OR t.comName = i_comName)
+        AND (i_city = 'ALL' OR i_city = '' OR t.thCity = i_city)
         AND (i_state = 'ALL' OR i_state = '' OR t.thState = i_state)
         AND (i_minMovPlayDate IS NULL OR mp.movPlayDate >= i_minMovPlayDate)
         AND (i_maxMovPlayDate IS NULL OR mp.movPlayDate <= i_maxMovPlayDate);
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS customer_view_mov;
 DELIMITER $$
@@ -495,13 +516,23 @@ BEGIN
     IF 3 > (SELECT COUNT(*)
         FROM customerviewmovie
         WHERE movPlayDate = i_movPlayDate
-            AND creditCardNum = i_creditCardNum
+            AND creditCardNum IN (
+                SELECT creditCardNum
+                FROM customercreditcard
+                WHERE username = (
+                    SELECT username
+                    FROM customercreditcard
+                    WHERE creditCardNum = i_creditCardNum
+                )
+            )
     ) THEN
-        INSERT INTO customerviewmovie (movName, movReleaseDate, movPlayDate, thName, comName, creditCardNum)
+        INSERT IGNORE INTO customerviewmovie (movName, movReleaseDate, movPlayDate, thName, comName, creditCardNum)
             VALUES (i_movName, i_movReleaseDate, i_movPlayDate, i_thName, i_comName, i_creditCardNum);
     END IF;
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS customer_view_history;
 DELIMITER $$
@@ -512,19 +543,16 @@ BEGIN
     DROP TABLE IF EXISTS CosViewHistory;
     CREATE TABLE CosViewHistory
     SELECT cvm.movName,
-    cvm.thName,
-    cvm.comName,
-    cvm.creditCardNum,
-    cvm.movPlayDate
+        cvm.thName,
+        cvm.comName,
+        cvm.creditCardNum,
+        cvm.movPlayDate
     FROM customerviewmovie cvm
-    INNER JOIN customercreditcard ccc
+    LEFT JOIN customercreditcard ccc
         ON ccc.creditCardNum = cvm.creditCardNum
-    WHERE ccc.username = i_cusUsername;
+    WHERE (i_cusUsername = "" OR i_cusUsername = ccc.username);
 END$$
 DELIMITER ;
-
-
-
 
 
 
@@ -534,15 +562,17 @@ CREATE PROCEDURE `user_filter_th`(IN i_thName VARCHAR(50), IN i_comName VARCHAR(
 BEGIN
     DROP TABLE IF EXISTS UserFilterTh;
     CREATE TABLE UserFilterTh
-	SELECT thName, thStreet, thCity, thState, thZipcode, comName
+  SELECT thName, thStreet, thCity, thState, thZipcode, comName
     FROM Theater
     WHERE
-		(thName = i_thName OR i_thName = "ALL") AND
-        (comName = i_comName OR i_comName = "ALL") AND
+    (thName = i_thName OR i_thName = "ALL" OR i_thName = "") AND
+        (comName = i_comName OR i_comName = "ALL" OR i_comName = "") AND
         (thCity = i_city OR i_city = "") AND
-        (thState = i_state OR i_state = "ALL" OR i_state = '' );
+        (thState = i_state OR i_state = "ALL" OR i_state = '');
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS user_visit_th;
 DELIMITER $$
@@ -553,10 +583,12 @@ CREATE PROCEDURE `user_visit_th`(
     IN i_username VARCHAR(50)
 )
 BEGIN
-    INSERT INTO UserVisitTheater (thName, comName, visitDate, username)
+    INSERT IGNORE INTO UserVisitTheater (thName, comName, visitDate, username)
         VALUES (i_thName, i_comName, i_visitDate, i_username);
 END$$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS user_filter_visitHistory;
 DELIMITER $$
@@ -564,12 +596,12 @@ CREATE PROCEDURE `user_filter_visitHistory`(IN i_username VARCHAR(50), IN i_minV
 BEGIN
     DROP TABLE IF EXISTS UserVisitHistory;
     CREATE TABLE UserVisitHistory
-	SELECT thName, thStreet, thCity, thState, thZipcode, comName, visitDate
+  SELECT thName, thStreet, thCity, thState, thZipcode, comName, visitDate
     FROM UserVisitTheater
-		NATURAL JOIN
+    NATURAL JOIN
         Theater
-	WHERE
-		(username = i_username) AND
+  WHERE
+    (username = i_username) AND
         (i_minVisitDate IS NULL OR visitDate >= i_minVisitDate) AND
         (i_maxVisitDate IS NULL OR visitDate <= i_maxVisitDate);
 END$$
