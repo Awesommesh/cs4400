@@ -566,13 +566,12 @@ app.post('/create_theater', (req, res)=> {
   let sqlGetCompanyName = 'SELECT comName FROM company';
   db.query(sqlGetCompanyName, (error, results) => {
     com_name = results[comName].comName;
-    let getManUserSQL = 'SELECT username FROM manager WHERE username NOT IN (SELECT manUsername FROM theater)';
+    let getManUserSQL = 'SELECT username FROM manager WHERE username NOT IN (SELECT manUsername FROM theater) AND comName="'+com_name+'"';
     db.query(getManUserSQL, (error, results) => {
       manUsername = results[manIndex].username;
       let sql = "CALL admin_create_theater(?, ?, ?, ?, ?, ?, ?, ?)";
-      console.log([name, com_name, address, city, state, zipcode, capacity, manUsername]);
       db.query(sql, [name, com_name, address, city, state, zipcode, capacity, manUsername], (error, results)  => {
-        if (results == undefined) {
+        if (results == undefined || results.affectedRows == 0) {
           console.log("Invalid input to create theater!");
         }
         res.redirect('/functionality/create_theater.html');
