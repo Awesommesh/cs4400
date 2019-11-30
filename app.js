@@ -238,10 +238,7 @@ app.post("/explore_movie", (req, res) => {
     min_play_date='1000-01-01';
   }
   if(max_play_date=='') {
-    const maxPlayDate = 'SELECT MAX(movPlayDate) AS playDate FROM movieplay';
-    db.query(maxPlayDate, (error, results) => {
-      max_play_date = results[0].playDate;
-    });
+    max_play_date = '9999-01-01';
   }
   var mov_name, com_name;
   if (movName=="ALL") {
@@ -329,10 +326,7 @@ app.post('/visit_history', (req, res)=> {
     min_visit_date='1000-01-01';
   }
   if(max_visit_date=='') {
-    const maxPlayDate = 'SELECT MAX(visitDate) AS visitDate FROM uservisittheater';
-    db.query(maxPlayDate, (error, results) => {
-      max_visit_date = results[0].visitDate;
-    });
+    max_visit_date = '9999-01-01';
   }
   var com_name;
   let sqlGetCompanyName = 'SELECT comName FROM company';
@@ -487,20 +481,19 @@ app.post('/view_movie', (req, res) => {
   let sqlGetCreditCardNum = "SELECT creditCardNum FROM customercreditcard WHERE username=\""+req.session.username+"\"";
   db.query(sqlGetCreditCardNum, (error, results) => {
     view_creditCard = results[creditCardNum].creditCardNum;
-  });
-
-  let sqlGetRowData = 'SELECT * FROM CosFilterMovie';
-  db.query(sqlGetRowData, (error, results) => {
-    if (row < results.length && row >= 0) {
-      var row_data = results[row];
-      let sql = 'CALL customer_view_mov(?, ?, ?, ?, ?, ?)';
-      db.query(sql, [view_creditCard, row_data.movName, row_data.movReleaseDate, row_data.thName,
-        row_data.comName, row_data.movPlayDate], (error, results)=> {
-        res.redirect("/functionality/explore_movie.html");
-      });
-    } else {
-      console.log("Invalid row selected!");
-    }
+    let sqlGetRowData = 'SELECT * FROM CosFilterMovie';
+    db.query(sqlGetRowData, (error, results) => {
+      if (row < results.length && row >= 0) {
+        var row_data = results[row];
+        let sql = 'CALL customer_view_mov(?, ?, ?, ?, ?, ?)';
+        db.query(sql, [view_creditCard, row_data.movName, row_data.movReleaseDate, row_data.thName,
+          row_data.comName, row_data.movPlayDate], (error, results)=> {
+          res.redirect("/functionality/explore_movie.html");
+        });
+      } else {
+        console.log("Invalid row selected!");
+      }
+    });
   });
 });
 
