@@ -649,118 +649,115 @@ app.post('/register_manager_customer', (req, res) => {
   var com_name;
   let sqlGetCompanyName = 'SELECT comName FROM company';
   var credits = [false, false, false, false, false];
-  if (credit1.length == 16 && isValidCreditCardNum(credit1)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit1;
-    db.query(checkIsUnique, (error, results)=> {
-      console.log(results);
-      if (results.affectedRows > 0) {
-        console.log("Inputted 1st Credit Card # is already registered!");
-        res.redirect('/registration/manager-customer.html');
-      } else {
-        credits[0] = true;
-      }
-    });
-  }
-  if (credit2.length == 16 && isValidCreditCardNum(credit2)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit2;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 2nd Credit Card # is already registered!");
-        res.redirect('/registration/manager-customer.html');
-      } else {
-        credits[1] = true;
-      }
-    });
-  }
-  if (credit3.length == 16 && isValidCreditCardNum(credit3)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit3;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 3rd Credit Card # is already registered!");
-        res.redirect('/registration/manager-customer.html');
-      } else {
-        credits[2] = true;
-      }
-    });
-  }
-  if (credit4.length == 16 && isValidCreditCardNum(credit4)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit4;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 4th Credit Card # is already registered!");
-        res.redirect('/registration/manager-customer.html');
-      } else {
-        credits[3] = true;
-      }
-    });
-  }
-  if (credit5.length == 16 && isValidCreditCardNum(credit5)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit5;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 5th Credit Card # is already registered!");
-        res.redirect('/registration/manager-customer.html');
-      } else {
-        credits[4] = true;
-      }
-    });
-  }
-  db.query(sqlGetCompanyName, (error, results) => {
-    com_name = results[comName].comName;
-    let sql = 'CALL manager_customer_register(?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    if (password === confirm && password.length >= 8 && zipcode.length == 5 && credits[0]) {
-      db.query(sql, [username, password, fname, lname, com_name, address, city, state, zipcode], (error, results) => {
-        if (results == undefined) {
-          console.log("Invalid input to Manager-Customer Registration!");
-          res.redirect('/registration/manager-customer.html');
-        } else {
-          if (results.affectedRows > 0) {
-            var addCreditCard = 'CALL manager_customer_add_creditcard(?, ?)';
-            db.query(addCreditCard, [username, credit1], (error, results) => {
-              console.log(results);
-              if (results == undefined) {
-                console.log('Invalid Inputted Credit Card Number!');
-              }
-            });
-            if (credits[1]) {
-              db.query(addCreditCard, [username, credit2], (error, results) => {
-                if (results == undefined) {
-                  console.log('Invalid Inputted Credit Card Number!');
-                }
-              });
-            }
-            if (credits[2]) {
-              db.query(addCreditCard, [username, credit3], (error, results) => {
-                if (results == undefined) {
-                  console.log('Invalid Inputted Credit Card Number!');
-                }
-              });
-            }
-            if (credits[3]) {
-              db.query(addCreditCard, [username, credit4], (error, results) => {
-                if (results == undefined) {
-                  console.log('Invalid Inputted Credit Card Number!');
-                }
-              });
-            }
-            if (credits[4]) {
-              db.query(addCreditCard, [username, credit5], (error, results) => {
-                if (results == undefined) {
-                  console.log('Invalid Inputted Credit Card Number!');
-                }
-              });
-            }
-            console.log("Successful Registration");
-            res.redirect('/');
-          } else {
-            console.log('Invalid Input to Manager-Customer Registration!');
-            res.redirect('/registration/manager-customer.html');
-          }
-        }
-      });
+  let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit1;
+  db.query(checkIsUnique, (error, results)=> {
+    if (results == undefined || results.affectedRows > 0) {
+      console.log("Inputted 1st Credit Card # is already registered!");
+      res.redirect('/registration/customer.html');
     } else {
-      console.log('Invalid Input to Manager-Customer Registration! Make sure that the 1st Credit Card # is valid!');
-      res.redirect('/registration/manager-customer.html');
+      credits[0] = credit1.length == 16 && isValidCreditCardNum(credit1);
+      checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit2;
+      db.query(checkIsUnique, (error, results)=> {
+        if (results == undefined || results.affectedRows > 0) {
+          console.log("Inputted 2nd Credit Card # is already registered!");
+          if (credit2.length == 16 && isValidCreditCardNum(credit2)) {
+            res.redirect('/registration/customer.html');
+          }
+        } else {
+          credits[1] = credit2.length == 16 && isValidCreditCardNum(credit2);
+        }
+        checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit3;
+        db.query(checkIsUnique, (error, results)=> {
+          if (results == undefined || results.affectedRows > 0) {
+            console.log("Inputted 3rd Credit Card # is already registered!");
+            if (credit3.length == 16 && isValidCreditCardNum(credit3)) {
+              res.redirect('/registration/customer.html');
+            }
+          } else {
+            credits[2] = credit3.length == 16 && isValidCreditCardNum(credit3);
+          }
+          checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit4;
+          db.query(checkIsUnique, (error, results)=> {
+            if (results == undefined || results.affectedRows > 0) {
+              console.log("Inputted 4th Credit Card # is already registered!");
+              if (credit4.length == 16 && isValidCreditCardNum(credit4)) {
+                res.redirect('/registration/customer.html');
+              }
+            } else {
+              credits[3] = credit4.length == 16 && isValidCreditCardNum(credit4);
+            }
+            checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit5;
+            db.query(checkIsUnique, (error, results)=> {
+              if (results == undefined || results.affectedRows > 0) {
+                console.log("Inputted 5th Credit Card # is already registered!");
+                if (credit5.length == 16 && isValidCreditCardNum(credit5)) {
+                  res.redirect('/registration/customer.html');
+                }
+              } else {
+                credits[4] = credit5.length == 16 && isValidCreditCardNum(credit5);
+              }
+              db.query(sqlGetCompanyName, (error, results) => {
+                com_name = results[comName].comName;
+                let sql = 'CALL manager_customer_register(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                if (password === confirm && password.length >= 8 && zipcode.length == 5 && credits[0]) {
+                  db.query(sql, [username, password, fname, lname, com_name, address, city, state, zipcode], (error, results) => {
+                    if (results == undefined) {
+                      console.log("Invalid input to Manager-Customer Registration!");
+                      res.redirect('/registration/manager-customer.html');
+                    } else {
+                      if (results.affectedRows > 0) {
+                        var addCreditCard = 'CALL manager_customer_add_creditcard(?, ?)';
+                        db.query(addCreditCard, [username, credit1], (error, results) => {
+                          console.log(results);
+                          if (results == undefined) {
+                            console.log('Invalid Inputted Credit Card Number!');
+                          }
+                        });
+                        if (credits[1]) {
+                          db.query(addCreditCard, [username, credit2], (error, results) => {
+                            if (results == undefined) {
+                              console.log('Invalid Inputted Credit Card Number!');
+                            }
+                          });
+                        }
+                        if (credits[2]) {
+                          db.query(addCreditCard, [username, credit3], (error, results) => {
+                            if (results == undefined) {
+                              console.log('Invalid Inputted Credit Card Number!');
+                            }
+                          });
+                        }
+                        if (credits[3]) {
+                          db.query(addCreditCard, [username, credit4], (error, results) => {
+                            if (results == undefined) {
+                              console.log('Invalid Inputted Credit Card Number!');
+                            }
+                          });
+                        }
+                        if (credits[4]) {
+                          db.query(addCreditCard, [username, credit5], (error, results) => {
+                            if (results == undefined) {
+                              console.log('Invalid Inputted Credit Card Number!');
+                            }
+                          });
+                        }
+                        console.log("Successful Registration");
+                        res.redirect('/');
+                      } else {
+                        console.log('Invalid Input to Manager-Customer Registration!');
+                        res.redirect('/registration/manager-customer.html');
+                      }
+                    }
+                  });
+                } else {
+                  console.log('Invalid Input to Manager-Customer Registration! Make sure that the 1st Credit Card # is valid!');
+                  res.redirect('/registration/manager-customer.html');
+                }
+              });
+            });
+          });
+        });
+      });
     }
   });
 });
@@ -768,116 +765,114 @@ app.post('/register_manager_customer', (req, res) => {
 app.post('/register_customer', (req, res) => {
   let {fname, lname, username, password, confirm, credit1, credit2, credit3, credit4, credit5} = req.body;
   var credits = [false, false, false, false, false];
-  if (credit1.length == 16 && isValidCreditCardNum(credit1)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit1;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 1st Credit Card # is already registered!");
-        res.redirect('/registration/customer.html');
-      } else {
-        credits[0] = true;
-      }
-    });
-  }
-  if (credit2.length == 16 && isValidCreditCardNum(credit2)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit2;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 2nd Credit Card # is already registered!");
-        res.redirect('/registration/customer.html');
-      } else {
-        credits[1] = true;
-      }
-    });
-  }
-  if (credit3.length == 16 && isValidCreditCardNum(credit3)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit3;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 3rd Credit Card # is already registered!");
-        res.redirect('/registration/customer.html');
-      } else {
-        credits[2] = true;
-      }
-    });
-  }
-  if (credit4.length == 16 && isValidCreditCardNum(credit4)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit4;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 4th Credit Card # is already registered!");
-        res.redirect('/registration/customer.html');
-      } else {
-        credits[3] = true;
-      }
-    });
-  }
-  if (credit5.length == 16 && isValidCreditCardNum(credit5)) {
-    let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit5;
-    db.query(checkIsUnique, (error, results)=> {
-      if (results.affectedRows > 0) {
-        console.log("Inputted 5th Credit Card # is already registered!");
-        res.redirect('/registration/customer.html');
-      } else {
-        credits[4] = true;
-      }
-    });
-  }
-  let sql = 'CALL customer_only_register(?, ?, ?, ?)';
-  if (password === confirm && password.length >= 8 && credits[0]) {
-    db.query(sql, [username, password, fname, lname], (error, results) => {
-      if (results == undefined) {
-        console.log("Invalid input to Customer-Only Registration!");
-        res.redirect('/registration/customer.html');
-      } else {
-        if (results.affectedRows > 0) {
-          var addCreditCard = 'CALL manager_customer_add_creditcard(?, ?)';
-          db.query(addCreditCard, [username, credit1], (error, results) => {
-            console.log(results);
-            if (results == undefined) {
-              console.log('Invalid Inputted Credit Card Number!');
-            }
-          });
-          if (credits[1]) {
-            db.query(addCreditCard, [username, credit2], (error, results) => {
-              if (results == undefined) {
-                console.log('Invalid Inputted Credit Card Number!');
-              }
-            });
+  let checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit1;
+  db.query(checkIsUnique, (error, results)=> {
+    if (results == undefined || results.affectedRows > 0) {
+      console.log("Inputted 1st Credit Card # is already registered!");
+      res.redirect('/registration/customer.html');
+    } else {
+      credits[0] = credit1.length == 16 && isValidCreditCardNum(credit1);
+      checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit2;
+      db.query(checkIsUnique, (error, results)=> {
+        if (results == undefined || results.affectedRows > 0) {
+          console.log("Inputted 2nd Credit Card # is already registered!");
+          if (credit2.length == 16 && isValidCreditCardNum(credit2)) {
+            res.redirect('/registration/customer.html');
           }
-          if (credits[2]) {
-            db.query(addCreditCard, [username, credit3], (error, results) => {
-              if (results == undefined) {
-                console.log('Invalid Inputted Credit Card Number!');
-              }
-            });
-          }
-          if (credits[3]) {
-            db.query(addCreditCard, [username, credit4], (error, results) => {
-              if (results == undefined) {
-                console.log('Invalid Inputted Credit Card Number!');
-              }
-            });
-          }
-          if (credits[4]) {
-            db.query(addCreditCard, [username, credit5], (error, results) => {
-              if (results == undefined) {
-                console.log('Invalid Inputted Credit Card Number!');
-              }
-            });
-          }
-          console.log("Successful Registration");
-          res.redirect('/');
         } else {
-          console.log('Invalid Input to Customer-Only Registration!');
-          res.redirect('/registration/customer.html');
+          credits[1] = credit2.length == 16 && isValidCreditCardNum(credit2);
         }
-      }
-    });
-  } else {
-    console.log('Invalid Input to Customer-Only Registration! Make sure that the 1st Credit Card # is valid!');
-    res.redirect('/registration/customer.html');
-  }
+        checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit3;
+        db.query(checkIsUnique, (error, results)=> {
+          if (results == undefined || results.affectedRows > 0) {
+            console.log("Inputted 3rd Credit Card # is already registered!");
+            if (credit3.length == 16 && isValidCreditCardNum(credit3)) {
+              res.redirect('/registration/customer.html');
+            }
+          } else {
+            credits[2] = credit3.length == 16 && isValidCreditCardNum(credit3);
+          }
+          checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit4;
+          db.query(checkIsUnique, (error, results)=> {
+            if (results == undefined || results.affectedRows > 0) {
+              console.log("Inputted 4th Credit Card # is already registered!");
+              if (credit4.length == 16 && isValidCreditCardNum(credit4)) {
+                res.redirect('/registration/customer.html');
+              }
+            } else {
+              credits[3] = credit4.length == 16 && isValidCreditCardNum(credit4);
+            }
+            checkIsUnique = 'SELECT creditCardNum FROM customercreditcard WHERE creditCardNum='+credit5;
+            db.query(checkIsUnique, (error, results)=> {
+              if (results == undefined || results.affectedRows > 0) {
+                console.log("Inputted 5th Credit Card # is already registered!");
+                if (credit5.length == 16 && isValidCreditCardNum(credit5)) {
+                  res.redirect('/registration/customer.html');
+                }
+              } else {
+                credits[4] = credit5.length == 16 && isValidCreditCardNum(credit5);
+              }
+              let sql = 'CALL customer_only_register(?, ?, ?, ?)';
+              if (password === confirm && password.length >= 8 && credits[0]) {
+                db.query(sql, [username, password, fname, lname], (error, results) => {
+                  if (results == undefined) {
+                    console.log("Invalid input to Customer-Only Registration!");
+                    res.redirect('/registration/customer.html');
+                  } else {
+                    if (results.affectedRows > 0) {
+                      var addCreditCard = 'CALL manager_customer_add_creditcard(?, ?)';
+                      db.query(addCreditCard, [username, credit1], (error, results) => {
+                        console.log(results);
+                        if (results == undefined) {
+                          console.log('Invalid Inputted Credit Card Number!');
+                        }
+                      });
+                      if (credits[1]) {
+                        db.query(addCreditCard, [username, credit2], (error, results) => {
+                          if (results == undefined) {
+                            console.log('Invalid Inputted Credit Card Number!');
+                          }
+                        });
+                      }
+                      if (credits[2]) {
+                        db.query(addCreditCard, [username, credit3], (error, results) => {
+                          if (results == undefined) {
+                            console.log('Invalid Inputted Credit Card Number!');
+                          }
+                        });
+                      }
+                      if (credits[3]) {
+                        db.query(addCreditCard, [username, credit4], (error, results) => {
+                          if (results == undefined) {
+                            console.log('Invalid Inputted Credit Card Number!');
+                          }
+                        });
+                      }
+                      if (credits[4]) {
+                        db.query(addCreditCard, [username, credit5], (error, results) => {
+                          if (results == undefined) {
+                            console.log('Invalid Inputted Credit Card Number!');
+                          }
+                        });
+                      }
+                      console.log("Successful Registration. Ignore errors directly above^");
+                      res.redirect('/');
+                    } else {
+                      console.log('Invalid Input to Customer-Only Registration!');
+                      res.redirect('/registration/customer.html');
+                    }
+                  }
+                });
+              } else {
+                console.log('Invalid Input to Customer-Only Registration! Make sure that the 1st Credit Card # is valid!');
+                res.redirect('/registration/customer.html');
+              }
+            });
+          });
+        });
+      });
+    }
+  });
 });
 
 function isValidCreditCardNum(creditCardNum) {
