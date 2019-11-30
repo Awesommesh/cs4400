@@ -12,6 +12,25 @@
     <div class="outer">
       <div class="inner">
         <div class="title">Customer-Only Registration</div>
+        <div class="space-large"></div>
+
+        <form action="/register_customer" method="POST">
+          <input name="fname" placeholder="First Name" required>
+          <input name="lname" placeholder="Last Name" required></br>
+          <input name="username" placeholder="Username" required><br>
+          <input name="password" placeholder="Password" type="password" required>
+          <input name="confirm" placeholder="Confirm Password" type="password" required></br>
+          <span class="text">Credit Card #: </span><br>
+          <input name="credit1" placeholder="1st Credit Card #" required><br>
+          <input name="credit2" placeholder="2nd Credit Card #"><br>
+          <input name="credit3" placeholder="3rd Credit Card #"><br>
+          <input name="credit4" placeholder="4th Credit Card #"><br>
+          <input name="credit5" placeholder="5th Credit Card #"><br>
+          <div class="space-large"></div>
+
+          <button class="minimum" type="submit">Register</button>
+          <button class="minimum" type="button" onclick="window.location.href='./navigation.html'">Back</button>
+        </form>
       </div>
     </div>
   </body>
