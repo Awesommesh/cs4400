@@ -607,9 +607,10 @@ app.post('/register_user', (req, res) => {
 
   if (password === confirm && password.length >= 8) {
     db.query(sql, [username, password, fname, lname], (error, results) => {
-      if (results.affectedRows > 0)
-        res.redirect('/functionality/user.html');
-      else
+      if (results.affectedRows > 0){
+        console.log("Successful Registration");
+        res.redirect('/');
+      } else
         res.redirect('/registration/user.html');
     });
   } else {
@@ -631,9 +632,10 @@ app.post('/register_manager', (req, res) => {
           console.log("Invalid input to Manager-Only Registration!");
           res.redirect('/registration/manager.html');
         } else {
-          if (results.affectedRows > 0)
-            res.redirect('/functionality/manager.html');
-          else
+          if (results.affectedRows > 0) {
+            console.log("Successful Registration");
+            res.redirect('/');
+          } else
             res.redirect('/registration/manager.html');
         }
       });
@@ -749,7 +751,8 @@ app.post('/register_manager_customer', (req, res) => {
                 }
               });
             }
-            res.redirect('/functionality/manager-customer.html');
+            console.log("Successful Registration");
+            res.redirect('/');
           } else {
             console.log('Invalid Input to Manager-Customer Registration!');
             res.redirect('/registration/manager-customer.html');
@@ -864,7 +867,8 @@ app.post('/register_customer', (req, res) => {
               }
             });
           }
-          res.redirect('/functionality/customer.html');
+          console.log("Successful Registration");
+          res.redirect('/');
         } else {
           console.log('Invalid Input to Customer-Only Registration!');
           res.redirect('/registration/customer.html');
