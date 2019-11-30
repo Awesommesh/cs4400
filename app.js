@@ -195,44 +195,40 @@ app.post('/theater_overview', (req, res) => {
     min_duration = 0;
   }
   if(max_duration=='') {
-    const maxDuration = 'SELECT MAX(duration) FROM movie';
-    db.query(maxDuration, (error, results) => {
-      max_duration = results[0];
-    });
+    max_duration = 100000;
   }
   if(min_release_date==''){
     min_release_date='1000-01-01';
   }
   if(max_release_date=='') {
-    const maxReleaseDate = 'SELECT MAX(movReleaseDate) FROM movie';
-    db.query(maxReleaseDate, (error, results) => {
-      max_release_date = results[0];
-    });
+    max_release_date='9999-01-01';
   }
   if(min_play_date=='') {
     min_play_date='1000-01-01';
   }
   if(max_play_date=='') {
-    const maxPlayDate = 'SELECT MAX(movPlayDate) FROM movieplay';
-    db.query(maxPlayDate, (error, results) => {
-      max_play_date = results[0];
-    });
+    max_play_date = '9999-01-01';
   }
   if(!not_played_movie_only) {
     not_played_movie_only = false;
   } else {
     not_played_movie_only = true;
   }
-  let sql = 'CALL manager_filter_th(?, ?, ?, ?, ?, ?, ?, ?)';
-  db.query(sql, [movie_name, min_duration, max_duration, min_release_date, max_release_date,
+  let sql = 'CALL manager_filter_th(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  console.log([req.session.username, movie_name, min_duration, max_duration, min_release_date, max_release_date,
+    min_play_date, max_play_date, not_played_movie_only]);
+  db.query(sql, [req.session.username, movie_name, min_duration, max_duration, min_release_date, max_release_date,
     min_play_date, max_play_date, not_played_movie_only], (error, results) => {
-    if (results == undefined) {
+    if (results == undefined || results.affectedRows == 0) {
       console.log("Invalid input to filter movies in theater!");
+      console.log(results);
+      res.redirect('/functionality/theater_overview.html');
+    } else {
+      let sqlResults = 'SELECT * FROM ManFilterTh';
+      db.query(sqlResults, (error, results) => {
+        res.redirect('/functionality/theater_overview.html?'+JSON.stringify(results));  //Terrible Terrible way of doing things but what can you do XD
+      });
     }
-  });
-  let sqlResults = 'SELECT * FROM ManFilterTh';
-  db.query(sqlResults, (error, results) => {
-    res.redirect('/functionality/theater_overview.html?'+JSON.stringify(results));  //Terrible Terrible way of doing things but what can you do XD
   });
 });
 
