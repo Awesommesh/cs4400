@@ -18,10 +18,9 @@ it and go to line 33 and change the password to your MySQL
 password
 9) On the command line go to Team73_Web_Application directory
 For example: cd
-C:\Users\mokar\Downloads\CS4400Project\Team73_Web_Applia
+C:\Users\<username>\Downloads\CS4400Project\Team73_Web_Applia
 tion
 10) Put the following command in the command line in order
 11) npm install
 12) node app.js
-13) The website URL is
-14) http://localhost:3000/
+13) Go to http://localhost:3000/
