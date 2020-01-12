@@ -30,7 +30,7 @@ app.listen('3000', () => {
 const db = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: 'Password',
+  password: 'Amitgull@7',
   database: 'team73'
 });
 
