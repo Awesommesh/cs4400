@@ -1,4 +1,4 @@
-# cs4400
+# CS4400
 Atlanta Movie Theater Database Project
 
 Final project made for CS 4400 Databases class in a team of 4 which is a web app that implements example functionality
